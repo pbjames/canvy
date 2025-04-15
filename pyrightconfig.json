@@ -1,5 +1,6 @@
 {
   "reportUnusedCallResult": false,
+  "reportMissingTypeStubs": false,
   "extraPaths": [
     "./typings/"
   ]
