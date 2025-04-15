@@ -1,3 +1,6 @@
 {
-  "reportUnusedCallResult": false
+  "reportUnusedCallResult": false,
+  "extraPaths": [
+    "./typings/"
+  ]
 }
