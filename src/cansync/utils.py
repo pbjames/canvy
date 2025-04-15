@@ -34,9 +34,9 @@ def verify_accessible_path(p: Path) -> bool:
 
 def setup_logging() -> None:
     """
-    Setup logging using logging config defined in const.py
+    Setup logging using logging config defined in const.py because it's
+    quite good
     """
-
     logging.config.dictConfig(LOGGING_CONFIG)
 
 
@@ -59,8 +59,8 @@ def same_length(*strings: str) -> list[str]:
     Extends short_name to apply to all strings in a list with the max
     length set to that of the largest string
     """
-
-    return [short_name(s, len(max(strings, key=lambda s: len(s)))) for s in strings]
+    strings_max = max(map(len, strings))
+    return [short_name(s, strings_max) for s in strings]
 
 
 def better_course_name(name: str) -> str:
@@ -71,28 +71,17 @@ def better_course_name(name: str) -> str:
 
 
 def create_dir(directory: Path) -> None:
-    """
-    Create a new directory if it does not already exist
-    """
     logger.debug(f"Creating directory {directory} if not existing")
     os.makedirs(directory, exist_ok=True)
 
 
 def create_config_at(config: CansyncConfig, path: Path = CONFIG_PATH) -> None:
-    """
-    Create config file when there is none present
-    """
     logger.debug(f"Creating new config file at {path}")
     create_dir(path)
     set_config(config, path)
 
 
 def get_config(path: Path | None = None) -> CansyncConfig:
-    """
-    Get config options
-
-    :returns: Config as a key-value dictionary
-    """
     path = path or CONFIG_PATH
     with open(path) as fp:
         logger.debug(f"Retrieving config from {path}")
@@ -101,8 +90,6 @@ def get_config(path: Path | None = None) -> CansyncConfig:
 
 
 def set_config(config: CansyncConfig, dest: Path = CONFIG_PATH) -> None:
-    """Write to local config file"""
-
     dest = dest if dest else CONFIG_PATH
     with open(dest, "w") as fp:
         logger.debug("Writing config")
@@ -113,16 +100,19 @@ def download_structured(file: File, *dirs: Path, force: bool = False) -> bool:
     """
     Download a canvasapi File and preserve course structure using directory names
 
-    :returns: If the file was downloaded
+    Args:
+        file: File object given by Canvas, can raise various exceptions
+        dirs: Series of directory names to make and download file into
+        force: Overwrite any previously existing files
+
+    Returns:
+        If the file was downloaded
     """
     download_dir = Path(get_config().storage_path).expanduser()
-
-    # INFO: this is my favourite line of code (that mypy hates :D)
     path: Path = reduce(lambda p, q: p / q, [download_dir, *dirs])
     filename: str = file.filename
     file_path: Path = path / filename
     create_dir(path)
-
     if not file_path.is_file() or force:
         logger.info(f"Downloading {filename}{'(forced)' * force}")
         try:
