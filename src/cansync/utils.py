@@ -85,7 +85,7 @@ def get_config(path: Path | None = None) -> CansyncConfig:
     path = path or CONFIG_PATH
     with open(path) as fp:
         logger.debug(f"Retrieving config from {path}")
-        config = CansyncConfig(**toml.load(fp))
+        config = CansyncConfig(**toml.load(fp))  # pyright: ignore[reportAny]
     return config
 
 
@@ -110,13 +110,13 @@ def download_structured(file: File, *dirs: Path, force: bool = False) -> bool:
     """
     download_dir = Path(get_config().storage_path).expanduser()
     path: Path = reduce(lambda p, q: p / q, [download_dir, *dirs])
-    filename: str = file.filename
+    filename: str = file.filename  # pyright: ignore[reportAny]
     file_path: Path = path / filename
     create_dir(path)
     if not file_path.is_file() or force:
         logger.info(f"Downloading {filename}{'(forced)' * force}")
         try:
-            file.download(file_path)
+            file.download(file_path)  # pyright: ignore[reportUnknownMemberType]
             return True
         except Exception as e:
             logger.warning(
