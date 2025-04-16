@@ -5,9 +5,13 @@ from pathlib import Path
 from pydantic import BaseModel, Field, field_validator
 
 from cansync.const import (
+    ANTHRO_KEY_DESC,
     API_KEY_DESC,
     API_KEY_REGEX,
+    API_SK_REGEX,
+    DEFAULT_DOWNLOAD_DIR,
     EDU_URL_DESC,
+    OPENAI_KEY_DESC,
     STORAGE_PATH_DESC,
     URL_REGEX,
 )
@@ -16,17 +20,11 @@ logger = logging.getLogger(__name__)
 
 
 class CansyncConfig(BaseModel):
-    api_key: str = Field(
-        description=API_KEY_DESC,
-        pattern=API_KEY_REGEX,
-    )
-    edu_url: str = Field(
-        description=EDU_URL_DESC,
-        pattern=URL_REGEX,
-    )
-    storage_path: Path = Field(
-        description=STORAGE_PATH_DESC,
-    )
+    canvas_key: str = Field(description=API_KEY_DESC, pattern=API_KEY_REGEX)
+    canvas_url: str = Field(description=EDU_URL_DESC, pattern=URL_REGEX)
+    openai_key: str = Field(description=OPENAI_KEY_DESC, pattern=API_SK_REGEX)
+    anthro_key: str = Field(description=ANTHRO_KEY_DESC, pattern=API_SK_REGEX)
+    storage_path: Path = Field(DEFAULT_DOWNLOAD_DIR, description=STORAGE_PATH_DESC)
 
     @field_validator("storage_path")
     @classmethod
@@ -37,7 +35,6 @@ class CansyncConfig(BaseModel):
         """
         if value.exists():
             return value.owner() == os.getlogin()
-
         try:
             value.mkdir(parents=True)
             return True

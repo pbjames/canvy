@@ -118,7 +118,7 @@ def download_structured(file: File, *dirs: Path, force: bool = False) -> bool:
         try:
             file.download(file_path)
             return True
-        except BaseException as e:
+        except Exception as e:
             logger.warning(
                 f"Tried to download {filename} but we likely don't have access ({e})"
             )

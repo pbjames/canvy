@@ -16,6 +16,7 @@ URL_REGEX: Final[str] = (
     r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]"
     + r"{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)"
 )
+API_SK_REGEX: Final[str] = "sk-(ant-)?[a-zA-Z0-9]{40,48}"
 API_KEY_REGEX: Final[str] = r"\d{4}~[A-Za-z0-9]{64}"
 API_KEY_DESC: Final[str] = (
     "API key provided by Canvas which grants access to the API through your account"
@@ -24,6 +25,8 @@ EDU_URL_DESC: Final[str] = (
     "Institution URL that is used for Canvas, you should have this provided by them."
 )
 STORAGE_PATH_DESC: Final[str] = "Where to store files"
+OPENAI_KEY_DESC: Final[str] = "OpenAI API key to access the GPT models"
+ANTHRO_KEY_DESC: Final[str] = "Antrhopic AI API key for the claude models"
 
 LOG_FN: Final[Path] = user_log_path(APP_NAME) / "cansync.log"
 CONFIG_PATH: Final[Path] = user_config_path(APP_NAME) / "config.toml"
