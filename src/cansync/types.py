@@ -2,9 +2,7 @@ import logging
 import os
 from enum import StrEnum
 from pathlib import Path
-from typing import Generator
 
-from canvasapi.module import Module, ModuleItem
 from pydantic import BaseModel, Field, field_serializer, field_validator
 
 from cansync.const import (
@@ -59,8 +57,3 @@ class ModuleItemType(StrEnum):
     ATTACHMENT = "File"
     DISCUSSION = "Discussion"
     ASSIGNMENT = "Assignment"
-
-    def items_by_type(self, module: Module) -> Generator[ModuleItem, None, None]:
-        yield from filter(
-            lambda item: ModuleItemType(item.type) is self, module.get_module_items()
-        )
