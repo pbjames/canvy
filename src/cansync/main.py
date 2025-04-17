@@ -6,7 +6,7 @@ from canvasapi.canvas import Canvas, Course
 from typer import Typer
 
 from cansync.const import DEFAULT_DOWNLOAD_DIR
-from cansync.scripts.downloader import download as scripts_download
+from cansync.scripts.downloader import download as _download
 from cansync.types import CansyncConfig
 from cansync.utils import (
     get_config,
@@ -27,7 +27,7 @@ def default_config():
 @cli.command()
 def download(path: Path | None = None, force: bool = False):
     canvas, config = default_config()
-    scripts_download(canvas, config.canvas_url, force=force)
+    _download(canvas, config.canvas_url, force=force)
 
 
 @cli.command()
