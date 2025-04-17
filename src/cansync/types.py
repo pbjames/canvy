@@ -1,17 +1,16 @@
 import logging
 import os
+from enum import StrEnum
 from pathlib import Path
+from typing import Generator
 
-from pydantic import BaseModel, Field, field_validator
+from canvasapi.module import Module, ModuleItem
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 from cansync.const import (
-    ANTHRO_KEY_DESC,
     API_KEY_DESC,
     API_KEY_REGEX,
-    API_SK_REGEX,
-    DEFAULT_DOWNLOAD_DIR,
     EDU_URL_DESC,
-    OPENAI_KEY_DESC,
     STORAGE_PATH_DESC,
     URL_REGEX,
 )
@@ -22,25 +21,46 @@ logger = logging.getLogger(__name__)
 class CansyncConfig(BaseModel):
     canvas_key: str = Field(description=API_KEY_DESC, pattern=API_KEY_REGEX)
     canvas_url: str = Field(description=EDU_URL_DESC, pattern=URL_REGEX)
-    openai_key: str = Field(description=OPENAI_KEY_DESC, pattern=API_SK_REGEX)
-    anthro_key: str = Field(description=ANTHRO_KEY_DESC, pattern=API_SK_REGEX)
-    storage_path: Path = Field(DEFAULT_DOWNLOAD_DIR, description=STORAGE_PATH_DESC)
+    storage_path: Path = Field(description=STORAGE_PATH_DESC)
 
     @field_validator("storage_path")
     @classmethod
-    def verify_accessible_path(cls, value: Path) -> bool:
+    def verify_accessible_path(cls, value: Path) -> Path:
         """
         Test if the user can access a given path to prevent compounding
         files access errors
         """
-        if value.exists():
-            return value.owner() == os.getlogin()
+        if value.exists() and value.owner() != os.getlogin():
+            e = f"Path {value} exists but we don't have permission to access it"
+            raise ValueError(e)
         try:
-            value.mkdir(parents=True)
-            return True
+            value.mkdir(parents=True, exist_ok=True)
         except PermissionError as e:
-            logger.warning(e)
-            return False
+            logger.error(e)
+            raise e
         except Exception as e:
-            logger.warning(f"Unknown path resolution error: '{e}'")
-            return False
+            logger.error(f"Unknown path resolution error: '{e}'")
+        return value
+
+    @field_serializer("storage_path")
+    def serialize_path(self, value: Path) -> str:
+        """
+        Do this or else it uses __repr__ for some reason
+        """
+        return str(value)
+
+
+class ModuleItemType(StrEnum):
+    HEADER = "SubHeader"
+    PAGE = "Page"
+    QUIZ = "Quiz"
+    EXTERNAL_TOOL = "ExternalTool"
+    EXTERNAL_URL = "ExternalUrl"
+    ATTACHMENT = "File"
+    DISCUSSION = "Discussion"
+    ASSIGNMENT = "Assignment"
+
+    def items_by_type(self, module: Module) -> Generator[ModuleItem, None, None]:
+        yield from filter(
+            lambda item: ModuleItemType(item.type) is self, module.get_module_items()
+        )

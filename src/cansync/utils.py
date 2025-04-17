@@ -1,3 +1,4 @@
+import json
 import logging.config
 import os
 import re
@@ -7,7 +8,7 @@ from pathlib import Path
 import toml
 from canvasapi.file import File
 
-from cansync.const import CONFIG_PATH, LOGGING_CONFIG
+from cansync.const import CONFIG_PATH, LOG_FN, LOGGING_CONFIG
 from cansync.types import CansyncConfig
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ def setup_logging() -> None:
     Setup logging using logging config defined in const.py because it's
     quite good
     """
+    create_dir(LOG_FN.parent)
     logging.config.dictConfig(LOGGING_CONFIG)
 
 
@@ -93,7 +95,7 @@ def set_config(config: CansyncConfig, dest: Path = CONFIG_PATH) -> None:
     dest = dest if dest else CONFIG_PATH
     with open(dest, "w") as fp:
         logger.debug("Writing config")
-        toml.dump(config.model_dump(), fp)
+        toml.dump(json.loads(config.model_dump_json()), fp)
 
 
 def download_structured(file: File, *dirs: Path, force: bool = False) -> bool:
