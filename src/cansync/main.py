@@ -27,7 +27,7 @@ def extract_files_from_page(
     canvas: Canvas, regex: str, page: Page
 ) -> Generator[File, None, None]:
     for _, id in re.findall(regex, page.body):
-        logger.info(f"Scanned files({id}) from Page({page.id})")
+        logger.info(f"Scanned files({id}) from Page({page.page_id})")
         if id is not None:
             yield canvas.get_file(id)
 
