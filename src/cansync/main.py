@@ -25,9 +25,13 @@ def default_config():
 
 
 @cli.command()
-def download(path: Path | None = None, force: bool = False):
+def download(force: bool = False):
     canvas, config = default_config()
     _download(canvas, config.canvas_url, force=force)
+
+
+@cli.command()
+def teacher(): ...
 
 
 @cli.command()
