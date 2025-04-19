@@ -5,7 +5,12 @@ from pathlib import Path
 from canvasapi.canvas import Canvas, Course
 from typer import Typer
 
-from cansync.const import DEFAULT_DOWNLOAD_DIR
+from cansync.const import (
+    AGENT_DESCRIPTION,
+    AGENT_INSTRUCTIONS,
+    DEFAULT_DOWNLOAD_DIR,
+    OPENAI_MODEL,
+)
 from cansync.scripts.downloader import download as _download
 from cansync.types import CansyncConfig
 from cansync.utils import (
@@ -13,6 +18,7 @@ from cansync.utils import (
     setup_logging,
 )
 from cansync.utils import set_config as utils_set_config
+import sys
 
 cli = Typer()
 logger = logging.getLogger(__name__)
@@ -31,7 +37,41 @@ def download(force: bool = False):
 
 
 @cli.command()
-def teacher(): ...
+def teacher():
+    _, config = default_config()
+    if config.openai_key is None:
+        logger.error("There's no OpenAI key")
+        sys.exit(1)
+    from agno.agent.agent import Agent
+    from agno.embedder.openai import OpenAIEmbedder
+    from agno.knowledge.pdf import PDFKnowledgeBase
+    from agno.models.openai.chat import OpenAIChat
+    from agno.tools.duckduckgo import DuckDuckGoTools
+    from agno.vectordb.lancedb.lance_db import LanceDb
+    from agno.vectordb.search import SearchType
+
+    agent = Agent(
+        model=OpenAIChat(id=OPENAI_MODEL),
+        description=AGENT_DESCRIPTION,
+        instructions=AGENT_INSTRUCTIONS,
+        knowledge=PDFKnowledgeBase(
+            path=config.storage_path,
+            vector_db=LanceDb(
+                uri="tmp/lancedb",
+                table_name="pdfs",
+                search_type=SearchType.hybrid,
+                embedder=OpenAIEmbedder(id="text-embedding-3-small"),
+            ),
+        ),
+        tools=[DuckDuckGoTools()],
+        show_tool_calls=True,
+        markdown=True,
+    )
+    # TODO: Might be bad to keep this
+    if agent.knowledge is not None:
+        agent.knowledge.load()
+    while True:
+        agent.print_response(input(">>> "))
 
 
 @cli.command()
@@ -43,12 +83,15 @@ def courses():
 
 
 @cli.command()
-def set_config(canvas_url: str, storage_path: Path | None = None):
+def set_config(
+    canvas_url: str, storage_path: Path | None = None, openai_key: str | None = None
+):
     canvas_key = getpass("Canvas API Key: ")
     config = CansyncConfig(
         canvas_url=canvas_url,
         canvas_key=canvas_key,
         storage_path=storage_path or DEFAULT_DOWNLOAD_DIR,
+        openai_key=openai_key,
     )
     utils_set_config(config)
 

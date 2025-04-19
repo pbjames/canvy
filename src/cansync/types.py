@@ -8,7 +8,9 @@ from pydantic import BaseModel, Field, field_serializer, field_validator
 from cansync.const import (
     API_KEY_DESC,
     API_KEY_REGEX,
+    API_SK_REGEX,
     EDU_URL_DESC,
+    OPENAI_KEY_DESC,
     STORAGE_PATH_DESC,
     URL_REGEX,
 )
@@ -19,6 +21,8 @@ logger = logging.getLogger(__name__)
 class CansyncConfig(BaseModel):
     canvas_key: str = Field(description=API_KEY_DESC, pattern=API_KEY_REGEX)
     canvas_url: str = Field(description=EDU_URL_DESC, pattern=URL_REGEX)
+    # TODO: this dont work, pattern=API_SK_REGEX)
+    openai_key: str | None = Field(description=OPENAI_KEY_DESC)
     storage_path: Path = Field(description=STORAGE_PATH_DESC)
 
     @field_validator("storage_path")

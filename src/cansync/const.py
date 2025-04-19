@@ -12,6 +12,20 @@ from cansync import APP_NAME
 
 logger = logging.getLogger(__name__)
 
+OPENAI_MODEL: Final[str] = "gpt-4o"
+
+AGENT_DESCRIPTION: Final[
+    str
+] = """
+    You are an assistant searching through files downloaded from Canvas LMS, user is
+    likely a University student.
+    """
+AGENT_INSTRUCTIONS: Final[list[str]] = [
+    "Search your knowledge base for the correct slides and coursework materials",
+    "If the question is better suited for the web, search the web to fill in gaps.",
+    "Prefer the information in your knowledge base over the web results.",
+]
+
 URL_REGEX: Final[str] = (
     r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]"
     + r"{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)"
