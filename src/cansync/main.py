@@ -70,7 +70,10 @@ def teacher():
         tools=[DuckDuckGoTools(), canvas_files, create_tool(new_knowledge_queue)],
         # add_references=True,
         show_tool_calls=True,
-        markdown=True,
+        add_history_to_messages=True,
+        num_history_runs=3,
+        read_chat_history=True,
+        markdown=False,
     )
     # INFO: Might be bad to keep this
     # if agent.knowledge is not None:
