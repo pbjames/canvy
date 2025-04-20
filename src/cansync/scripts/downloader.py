@@ -30,11 +30,12 @@ def extract_files_from_page(
     names = [better_course_name(course.name), module.name, page_title]
     if getattr(page, "body", None) is None:
         yield None  # INFO: Don't want to stop generator
-    logging.info("Found page: {item}")
-    for id in re.findall(regex, page.body):
-        logger.info(f"Scanned files({id}) from Page({page.page_id})")
-        if id is not None:
-            yield (names, canvas.get_file(id))
+    else:
+        logging.info(f"Found page: {page}")
+        for id in re.findall(regex, page.body):
+            logger.info(f"Scanned files({id}) from Page({page.page_id})")
+            if id is not None:
+                yield (names, canvas.get_file(id))
 
 
 def module_item_files(
