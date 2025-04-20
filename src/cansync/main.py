@@ -1,21 +1,17 @@
-from functools import wraps
+import inspect
 import logging
-import sys
+from collections.abc import Callable
+from functools import wraps
 from getpass import getpass
 from pathlib import Path
+from typing import Any
 
 from canvasapi.canvas import Canvas, Course
 from typer import Typer
 
 from cansync.const import (
-    AGENT_DESCRIPTION,
-    AGENT_INSTRUCTIONS,
     DEFAULT_DOWNLOAD_DIR,
-    OPENAI_EMBEDDINGS,
-    OPENAI_MODEL,
 )
-from cansync.scripts.downloader import download as _download
-from cansync.scripts.teacher import canvas_files, create_tool
 from cansync.types import CansyncConfig
 from cansync.utils import (
     get_config,
@@ -27,78 +23,43 @@ cli = Typer()
 logger = logging.getLogger(__name__)
 
 
-def default_config():
+def requires_config(func: Callable[..., None]):
     config = get_config()
     canvas = Canvas(config.canvas_url, config.canvas_key)
-    return canvas, config
-
-
-def requires_config(func):
-    config = get_config()
-    canvas = Canvas(config.canvas_url, config.canvas_key)
+    names = ["config", "canvas"]
 
     @wraps(func)
-    def with_config(*args, **kwargs):
+    def with_config(*args: Any, **kwargs: Any):
         return func(canvas, config, *args, **kwargs)
 
+    sig = inspect.signature(func)
+    new_params = [
+        param for name, param in sig.parameters.items() if name not in [*names, "_"]
+    ]
+    new_sig = sig.replace(parameters=new_params)
+    with_config.__signature__ = new_sig  # pyright: ignore[reportAttributeAccessIssue]
     return with_config
 
 
 @cli.command()
 @requires_config
-def download(canvas, config, force: bool = False):
-    _download(canvas, config.canvas_url, force=force)
+def download(canvas: Canvas, config: CansyncConfig):
+    from cansync.scripts.downloader import download as download
+
+    download(canvas, config.canvas_url)
 
 
 @cli.command()
-def teacher():
-    _, config = default_config()
-    if config.openai_key is None:
-        logger.error("There's no OpenAI key")
-        sys.exit(1)
-    from agno.agent.agent import Agent
-    from agno.embedder.openai import OpenAIEmbedder
-    from agno.knowledge.pdf import PDFKnowledgeBase
-    from agno.models.openai.chat import OpenAIChat
-    from agno.tools.duckduckgo import DuckDuckGoTools
-    from agno.vectordb.qdrant.qdrant import Qdrant
-    from agno.vectordb.search import SearchType
+@requires_config
+def teacher(_: Canvas, config: CansyncConfig):
+    from cansync.scripts.teacher import teacher as teacher
 
-    new_knowledge_queue = []
-    agent = Agent(
-        model=OpenAIChat(id=OPENAI_MODEL, api_key=config.openai_key),
-        description=AGENT_DESCRIPTION,
-        instructions=AGENT_INSTRUCTIONS,
-        knowledge=PDFKnowledgeBase(
-            path=config.storage_path,
-            vector_db=Qdrant(
-                collection="canvas-files",
-                path=str(config.storage_path / ".vector_db"),
-                search_type=SearchType.hybrid,
-                embedder=OpenAIEmbedder(
-                    id=OPENAI_EMBEDDINGS, api_key=config.openai_key
-                ),
-            ),
-        ),
-        tools=[DuckDuckGoTools(), canvas_files, create_tool(new_knowledge_queue)],
-        # add_references=True,
-        show_tool_calls=True,
-        add_history_to_messages=True,
-        num_history_runs=3,
-        read_chat_history=True,
-        markdown=False,
-    )
-    while True:
-        agent.print_response(input(">>> "))
-        if new_knowledge_queue and agent.knowledge is not None:
-            logger.info("Adding new knowledge information")
-            agent.knowledge.load_documents(new_knowledge_queue, skip_existing=True)
-            new_knowledge_queue.clear()
+    teacher(config)
 
 
 @cli.command()
-def courses():
-    canvas, _ = default_config()
+@requires_config
+def courses(canvas: Canvas, _: CansyncConfig):
     courses: list[Course] = list(canvas.get_courses(enrollment_state="active"))
     for course in courses:
         print(f"{course}")  # noqa: T201

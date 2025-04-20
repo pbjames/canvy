@@ -27,6 +27,10 @@ def extract_files_from_page(
     regex: str,
     page: Page,
 ):
+    """
+    Use a regex generated from the ID of the course to scrape canvas file links
+    and add them to the download queue
+    """
     page_title = getattr(page, "title", "No Title")
     names = [better_course_name(course.name), module.name, page_title]
     if getattr(page, "body", None) is None:
@@ -49,6 +53,9 @@ def extract_files_from_page(
 def module_item_files(
     canvas: Canvas, course: Course, module: Module, regex: str, item: ModuleItem
 ):
+    """
+    Process module items into the file queue for downloads
+    """
     course_name = better_course_name(course.name)
     if (type := ModuleItemType(item.type)) == ModuleItemType.PAGE:
         page = course.get_page(item.page_url)
@@ -60,16 +67,19 @@ def module_item_files(
         yield (names, file)
 
 
-def download(canvas: Canvas, url: str, force: bool):
+def download(canvas: Canvas, url: str):
+    """
+    Download every file accessible through a Canvas account through courses and modules
+    """
     user_courses = canvas.get_courses(enrollment_state="active")
     file_queue: list[tuple[list[str], File]] = []
     for course in user_courses:
         resource_regex = rf"{url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
         while file_queue:
-            paths, file = file_queue.pop(force)
-            download_structured(file, *map(Path, paths), force=force)
-        for module in list(course.get_modules()):
-            for item in list(module.get_module_items()):
+            paths, file = file_queue.pop()
+            download_structured(file, *map(Path, paths))
+        for module in course.get_modules():
+            for item in module.get_module_items():
                 item_source = module_item_files(
                     canvas, course, module, resource_regex, item
                 )

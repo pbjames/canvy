@@ -95,7 +95,8 @@ def set_config(config: CansyncConfig, dest: Path = CONFIG_PATH) -> None:
     dest = dest if dest else CONFIG_PATH
     with open(dest, "w") as fp:
         logger.debug("Writing config")
-        toml.dump(json.loads(config.model_dump_json()), fp)
+        dumped = json.loads(config.model_dump_json())  # pyright: ignore[reportAny]
+        toml.dump(dumped, fp)  # pyright: ignore[reportAny]
 
 
 def download_structured(file: File, *dirs: Path, force: bool = False) -> bool:
