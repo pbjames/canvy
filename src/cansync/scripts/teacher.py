@@ -89,7 +89,7 @@ def teacher(config: CansyncConfig) -> None:
             ),
         ),
         tools=[DuckDuckGoTools(), canvas_files, create_tool(new_knowledge_queue)],
-        # add_references=True,
+        add_references=True,
         show_tool_calls=True,
         add_history_to_messages=True,
         num_history_runs=3,
@@ -97,7 +97,14 @@ def teacher(config: CansyncConfig) -> None:
         markdown=False,
     )
     while True:
-        agent.print_response(input(">>> "))
+        try:
+            user_input = input(">>> ")
+            if user_input in ["quit", "/q", "exit"]:
+                sys.exit(0)
+        except (KeyboardInterrupt, EOFError):
+            print("Program exiting...")  # noqa: T201
+            sys.exit(0)
+        agent.print_response(user_input)  # pyright: ignore[reportUnknownMemberType]
         if new_knowledge_queue and agent.knowledge is not None:
             logger.info("Adding new knowledge")
             agent.knowledge.load_documents(new_knowledge_queue, skip_existing=True)
