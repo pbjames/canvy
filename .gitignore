@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Any vector db
+tmp/*

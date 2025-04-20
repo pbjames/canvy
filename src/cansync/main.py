@@ -3,6 +3,7 @@ import sys
 from getpass import getpass
 from pathlib import Path
 
+from agno.document.reader.pdf_reader import PDFReader
 from canvasapi.canvas import Canvas, Course
 from typer import Typer
 
@@ -47,20 +48,22 @@ def teacher():
     from agno.knowledge.pdf import PDFKnowledgeBase
     from agno.models.openai.chat import OpenAIChat
     from agno.tools.duckduckgo import DuckDuckGoTools
-    from agno.vectordb.lancedb.lance_db import LanceDb
+    from agno.vectordb.qdrant.qdrant import Qdrant
     from agno.vectordb.search import SearchType
 
     agent = Agent(
-        model=OpenAIChat(id=OPENAI_MODEL),
+        model=OpenAIChat(id=OPENAI_MODEL, api_key=config.openai_key),
         description=AGENT_DESCRIPTION,
         instructions=AGENT_INSTRUCTIONS,
         knowledge=PDFKnowledgeBase(
             path=config.storage_path,
-            vector_db=LanceDb(
-                uri="tmp/lancedb",
-                table_name="pdfs",
+            vector_db=Qdrant(
+                collection="canvas-files",
+                path="tmp/qdrant",
                 search_type=SearchType.hybrid,
-                embedder=OpenAIEmbedder(id="text-embedding-3-small"),
+                embedder=OpenAIEmbedder(
+                    id="text-embedding-3-small", api_key=config.openai_key
+                ),
             ),
         ),
         tools=[DuckDuckGoTools()],
@@ -70,6 +73,7 @@ def teacher():
     # TODO: Might be bad to keep this
     if agent.knowledge is not None:
         agent.knowledge.load()
+    # agent.knowledge.load_documents(PDFReader().read(path))
     while True:
         agent.print_response(input(">>> "))
 
