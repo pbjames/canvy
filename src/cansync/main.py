@@ -1,4 +1,5 @@
 import logging
+import sys
 from getpass import getpass
 from pathlib import Path
 
@@ -18,7 +19,6 @@ from cansync.utils import (
     setup_logging,
 )
 from cansync.utils import set_config as utils_set_config
-import sys
 
 cli = Typer()
 logger = logging.getLogger(__name__)
