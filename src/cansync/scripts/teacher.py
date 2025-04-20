@@ -3,14 +3,10 @@ from pathlib import Path
 
 from agno.document.base import Document
 from agno.document.reader.pdf_reader import PDFReader
-from mcp.server import FastMCP
 
 from cansync.utils import get_config
 
-mcp = FastMCP()
 
-
-@mcp.tool()
 def canvas_files() -> str:
     """
     Produce the local directory of Canvas files so that we can extract text
@@ -46,4 +42,4 @@ def create_tool(queue: list[Document]):
         queue.extend(PDFReader().read(config.storage_path / pdf_rel_path))
         return "Done. You will now receive knowledge from god."
 
-    return mcp.tool()(retrieve_knowledge)
+    return retrieve_knowledge
