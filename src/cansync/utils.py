@@ -116,7 +116,7 @@ def download_structured(file: File, *dirs: Path, force: bool = False) -> bool:
     file_path: Path = path / filename
     create_dir(path)
     if not file_path.is_file() or force:
-        logger.info(f"Downloading {filename}{'(forced)' * force}")
+        logger.info(f"Downloading {filename}{'(forced)' * force} into {file_path}")
         try:
             file.download(file_path)  # pyright: ignore[reportUnknownMemberType]
             return True

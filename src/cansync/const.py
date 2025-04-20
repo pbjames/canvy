@@ -12,7 +12,7 @@ from cansync import APP_NAME
 
 logger = logging.getLogger(__name__)
 
-OPENAI_MODEL: Final[str] = "gpt-4o"
+OPENAI_MODEL: Final[str] = "gpt-4.1-mini"
 
 AGENT_DESCRIPTION: Final[
     str

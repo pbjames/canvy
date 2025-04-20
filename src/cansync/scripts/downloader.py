@@ -6,6 +6,7 @@ from pathlib import Path
 
 from canvasapi.canvas import Canvas
 from canvasapi.course import Course
+from canvasapi.exceptions import ResourceDoesNotExist
 from canvasapi.file import File
 from canvasapi.module import Module, ModuleItem
 from canvasapi.page import Page
@@ -35,7 +36,14 @@ def extract_files_from_page(
         for id in re.findall(regex, page.body):
             logger.info(f"Scanned files({id}) from Page({page.page_id})")
             if id is not None:
-                yield (names, canvas.get_file(id))
+                try:
+                    yield (names, canvas.get_file(id))
+                except ResourceDoesNotExist as e:
+                    logger.warning(f"Error downloading file from page: {e}")
+                    yield None
+                except Exception:
+                    logger.error(f"Unknown error downloading file {id}")
+                    yield None
 
 
 def module_item_files(

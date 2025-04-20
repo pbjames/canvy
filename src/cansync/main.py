@@ -3,7 +3,6 @@ import sys
 from getpass import getpass
 from pathlib import Path
 
-from agno.document.reader.pdf_reader import PDFReader
 from canvasapi.canvas import Canvas, Course
 from typer import Typer
 
@@ -14,6 +13,7 @@ from cansync.const import (
     OPENAI_MODEL,
 )
 from cansync.scripts.downloader import download as _download
+from cansync.scripts.teacher import canvas_files, create_tool
 from cansync.types import CansyncConfig
 from cansync.utils import (
     get_config,
@@ -51,6 +51,7 @@ def teacher():
     from agno.vectordb.qdrant.qdrant import Qdrant
     from agno.vectordb.search import SearchType
 
+    new_knowledge_queue = []
     agent = Agent(
         model=OpenAIChat(id=OPENAI_MODEL, api_key=config.openai_key),
         description=AGENT_DESCRIPTION,
@@ -66,16 +67,20 @@ def teacher():
                 ),
             ),
         ),
-        tools=[DuckDuckGoTools()],
+        tools=[DuckDuckGoTools(), canvas_files, create_tool(new_knowledge_queue)],
+        # add_references=True,
         show_tool_calls=True,
         markdown=True,
     )
-    # TODO: Might be bad to keep this
-    if agent.knowledge is not None:
-        agent.knowledge.load()
-    # agent.knowledge.load_documents(PDFReader().read(path))
+    # INFO: Might be bad to keep this
+    # if agent.knowledge is not None:
+    #     agent.knowledge.load()
     while True:
         agent.print_response(input(">>> "))
+        if new_knowledge_queue and agent.knowledge is not None:
+            logger.info("Adding new knowledge information")
+            agent.knowledge.load_documents(new_knowledge_queue)
+            new_knowledge_queue.clear()
 
 
 @cli.command()
