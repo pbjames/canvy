@@ -62,13 +62,13 @@ INFO Loaded 24 documents to knowledge base
 
 ## Installation
 
-Arch:
+Arch (not yet):
 `` yay -S python-cansync ``
 
 Basically anything else:
 
 1. Install [uv](https://github.com/astral-sh/uv)
-`` uv tool install cansync ``
+2. `` uv tool install cansync ``
 
 ## Contribution
 
