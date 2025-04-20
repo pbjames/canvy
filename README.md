@@ -57,7 +57,7 @@ INFO Reading: W2
 ┃ The example demonstrates how MLE uses observed data to i   ┃
 ┃ simple and concrete scenario. If you want, I can provide   ┃
 ┃                                                            ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 INFO Loading knowledge base
 INFO Loaded 24 documents to knowledge base
 >>>
