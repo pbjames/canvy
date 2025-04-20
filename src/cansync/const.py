@@ -13,6 +13,7 @@ from cansync import APP_NAME
 logger = logging.getLogger(__name__)
 
 OPENAI_MODEL: Final[str] = "gpt-4.1-mini"
+OPENAI_EMBEDDINGS: Final[str] = "text-embedding-3-small"
 
 AGENT_DESCRIPTION: Final[
     str
@@ -22,8 +23,9 @@ AGENT_DESCRIPTION: Final[
     """
 AGENT_INSTRUCTIONS: Final[list[str]] = [
     "Search your knowledge base for the correct slides and coursework materials",
-    "If the question is better suited for the web, search the web to fill in gaps.",
     "Prefer the information in your knowledge base over the web results.",
+    "If the question is better suited for the web, try looking through the canvas files first,\
+    and then the web",
 ]
 
 URL_REGEX: Final[str] = (

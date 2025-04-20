@@ -1,3 +1,4 @@
+from functools import wraps
 import logging
 import sys
 from getpass import getpass
@@ -10,6 +11,7 @@ from cansync.const import (
     AGENT_DESCRIPTION,
     AGENT_INSTRUCTIONS,
     DEFAULT_DOWNLOAD_DIR,
+    OPENAI_EMBEDDINGS,
     OPENAI_MODEL,
 )
 from cansync.scripts.downloader import download as _download
@@ -31,9 +33,20 @@ def default_config():
     return canvas, config
 
 
+def requires_config(func):
+    config = get_config()
+    canvas = Canvas(config.canvas_url, config.canvas_key)
+
+    @wraps(func)
+    def with_config(*args, **kwargs):
+        return func(canvas, config, *args, **kwargs)
+
+    return with_config
+
+
 @cli.command()
-def download(force: bool = False):
-    canvas, config = default_config()
+@requires_config
+def download(canvas, config, force: bool = False):
     _download(canvas, config.canvas_url, force=force)
 
 
@@ -63,7 +76,7 @@ def teacher():
                 path=str(config.storage_path / ".vector_db"),
                 search_type=SearchType.hybrid,
                 embedder=OpenAIEmbedder(
-                    id="text-embedding-3-small", api_key=config.openai_key
+                    id=OPENAI_EMBEDDINGS, api_key=config.openai_key
                 ),
             ),
         ),
