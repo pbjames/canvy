@@ -60,7 +60,7 @@ def teacher():
             path=config.storage_path,
             vector_db=Qdrant(
                 collection="canvas-files",
-                path="tmp/qdrant",
+                path=str(config.storage_path / ".vector_db"),
                 search_type=SearchType.hybrid,
                 embedder=OpenAIEmbedder(
                     id="text-embedding-3-small", api_key=config.openai_key
@@ -75,14 +75,11 @@ def teacher():
         read_chat_history=True,
         markdown=False,
     )
-    # INFO: Might be bad to keep this
-    # if agent.knowledge is not None:
-    #     agent.knowledge.load()
     while True:
         agent.print_response(input(">>> "))
         if new_knowledge_queue and agent.knowledge is not None:
             logger.info("Adding new knowledge information")
-            agent.knowledge.load_documents(new_knowledge_queue)
+            agent.knowledge.load_documents(new_knowledge_queue, skip_existing=True)
             new_knowledge_queue.clear()
 
 
