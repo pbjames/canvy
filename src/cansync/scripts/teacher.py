@@ -97,12 +97,8 @@ def teacher(config: CansyncConfig) -> None:
         markdown=False,
     )
     while True:
-        try:
-            user_input = input(">>> ")
-            if user_input in ["quit", "/q", "exit"]:
-                sys.exit(0)
-        except (KeyboardInterrupt, EOFError):
-            print("Program exiting...")  # noqa: T201
+        user_input = input(">>> ")
+        if user_input in ["quit", "/q", "exit"]:
             sys.exit(0)
         agent.print_response(user_input)  # pyright: ignore[reportUnknownMemberType]
         if new_knowledge_queue and agent.knowledge is not None:

@@ -21,6 +21,7 @@ dependencies = [
   "pydantic>=2.11.3",
   "pypdf>=5.4.0",
   "qdrant-client>=1.13.3",
+  "rich>=14.0.0",
   "toml>=0.10.2",
   "typer>=0.15.2",
 ]

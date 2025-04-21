@@ -99,6 +99,10 @@ def set_config(config: CansyncConfig, dest: Path = CONFIG_PATH) -> None:
         toml.dump(dumped, fp)  # pyright: ignore[reportAny]
 
 
+def delete_config(path: Path = CONFIG_PATH):
+    os.remove(path)
+
+
 def download_structured(file: File, *dirs: Path, force: bool = False) -> bool:
     """
     Download a canvasapi File and preserve course structure using directory names

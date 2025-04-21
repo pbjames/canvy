@@ -67,19 +67,44 @@ def module_item_files(
         yield (names, file)
 
 
-def download(canvas: Canvas, url: str):
+def download(canvas: Canvas, url: str) -> int:
     """
     Download every file accessible through a Canvas account through courses and modules
     """
-    user_courses = canvas.get_courses(enrollment_state="active")
-    file_queue: list[tuple[list[str], File]] = []
-    for course in user_courses:
-        resource_regex = rf"{url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
-        while file_queue:
-            paths, file = file_queue.pop()
-            download_structured(file, *map(Path, paths))
-        for module in course.get_modules():
-            for item in module.get_module_items():
-                file_queue.extend(
-                    module_item_files(canvas, course, module, resource_regex, item)
+    from rich.progress import Progress
+
+    with Progress() as progress:
+        user_courses = list(canvas.get_courses(enrollment_state="active"))
+        file_queue: list[tuple[list[str], File]] = []
+        download_count = 0
+        progress_course = progress.add_task("Course", total=len(user_courses))
+        for course in user_courses:
+            resource_regex = rf"{url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
+            while file_queue:
+                paths, file = file_queue.pop()
+                download_count += download_structured(file, *map(Path, paths))
+            modules = list(course.get_modules())
+            progress_module = progress.add_task(
+                "Module", total=len(modules), start=False
+            )
+            for module in modules:
+                progress.start_task(progress_module)
+                items = list(module.get_module_items())
+                progress_items = progress.add_task(
+                    "Items", total=len(items), start=False
                 )
+                for item in items:
+                    progress.start_task(progress_items)
+                    file_queue.extend(
+                        module_item_files(canvas, course, module, resource_regex, item)
+                    )
+                    progress.update(progress_items, advance=1)
+                progress.remove_task(progress_items)
+                progress.update(
+                    progress_module, advance=1, description=f"Module: {module.name}"
+                )
+            progress.remove_task(progress_module)
+            progress.update(
+                progress_course, advance=1, description=f"Course: {course.course_code}"
+            )
+    return download_count

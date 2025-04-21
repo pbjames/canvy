@@ -84,6 +84,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pypdf" },
     { name = "qdrant-client" },
+    { name = "rich" },
     { name = "toml" },
     { name = "typer" },
 ]
@@ -100,6 +101,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.11.3" },
     { name = "pypdf", specifier = ">=5.4.0" },
     { name = "qdrant-client", specifier = ">=1.13.3" },
+    { name = "rich", specifier = ">=14.0.0" },
     { name = "toml", specifier = ">=0.10.2" },
     { name = "typer", specifier = ">=0.15.2" },
 ]

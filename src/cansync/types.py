@@ -28,8 +28,7 @@ class CansyncConfig(BaseModel):
     @classmethod
     def verify_accessible_path(cls, value: Path) -> Path:
         """
-        Test if the user can access a given path to prevent compounding
-        files access errors
+        Test if the user can access a given path to prevent compounding files access errors
         """
         if value.exists() and value.owner() != os.getlogin():
             e = f"Path {value} exists but we don't have permission to access it"
@@ -41,6 +40,7 @@ class CansyncConfig(BaseModel):
             raise e
         except Exception as e:
             logger.error(f"Unknown path resolution error: '{e}'")
+            raise e
         return value
 
     @field_serializer("storage_path")
