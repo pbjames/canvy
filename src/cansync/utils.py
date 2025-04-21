@@ -42,29 +42,6 @@ def setup_logging() -> None:
     logging.config.dictConfig(LOGGING_CONFIG)
 
 
-def path_format(name: str) -> str:
-    return name.replace(" ", "-")
-
-
-def short_name(name: str, max_length: int) -> str:
-    """
-    Convert a long name to a short version for pretty UI
-    """
-    if len(name) <= max_length:
-        return name.ljust(max_length)
-    else:
-        return name[: max_length - 2] + ".."
-
-
-def same_length(*strings: str) -> list[str]:
-    """
-    Extends short_name to apply to all strings in a list with the max
-    length set to that of the largest string
-    """
-    strings_max = max(map(len, strings))
-    return [short_name(s, strings_max) for s in strings]
-
-
 def better_course_name(name: str) -> str:
     """
     Removes ID numbers next to the given title of the course
@@ -75,12 +52,6 @@ def better_course_name(name: str) -> str:
 def create_dir(directory: Path) -> None:
     logger.debug(f"Creating directory {directory} if not existing")
     os.makedirs(directory, exist_ok=True)
-
-
-def create_config_at(config: CansyncConfig, path: Path = CONFIG_PATH) -> None:
-    logger.debug(f"Creating new config file at {path}")
-    create_dir(path)
-    set_config(config, path)
 
 
 def get_config(path: Path | None = None) -> CansyncConfig:

@@ -68,6 +68,8 @@ def download(canvas: Canvas, config: CansyncConfig):
         sys.exit(1)
 
 
+# TODO: Add more options and add disclaimers, improve tool usage and add a problem sheet
+# making tool
 @cli.command(short_help="Use an assistant to go through the files")
 @requires_config
 def teacher(_: Canvas, config: CansyncConfig):
@@ -80,6 +82,7 @@ def teacher(_: Canvas, config: CansyncConfig):
         sys.exit(0)
 
 
+# TODO: Make this pretty printed
 @cli.command(short_help="List available courses")
 @requires_config
 def courses(canvas: Canvas, _: CansyncConfig):
@@ -117,6 +120,7 @@ def set_config(
 def main():
     setup_logging()
     cli()
+    # TODO: Use tests
 
 
 if __name__ == "__main__":

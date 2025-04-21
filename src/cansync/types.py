@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class CansyncConfig(BaseModel):
     canvas_key: str = Field(description=API_KEY_DESC, pattern=API_KEY_REGEX)
     canvas_url: str = Field(description=EDU_URL_DESC, pattern=URL_REGEX)
-    # TODO: this dont work, pattern=API_SK_REGEX)
+    # TODO: This dont work, pattern=API_SK_REGEX), also add more providers for LLMs
     openai_key: str | None = Field(description=OPENAI_KEY_DESC)
     storage_path: Path = Field(description=STORAGE_PATH_DESC)
 
@@ -51,6 +51,7 @@ class CansyncConfig(BaseModel):
         return str(value)
 
 
+# TODO: Make better use of the info from modules (low priority)
 class ModuleItemType(StrEnum):
     HEADER = "SubHeader"
     PAGE = "Page"

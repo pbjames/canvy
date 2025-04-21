@@ -1,4 +1,6 @@
 # pyright: reportAny=false
+# pyright: reportUnknownVariableType=false
+# pyright: reportUnknownArgumentType=false
 # pyright: reportUnknownMemberType=false
 import logging
 import re
@@ -74,39 +76,35 @@ def download(canvas: Canvas, url: str) -> int:
     """
     from rich.progress import Progress
 
+    # TODO: Make this return the download count once again, clean exit again and make
+    # canvasapi calls faster using executor.map on paginated lists if we can
     with Progress() as progress, ThreadPoolExecutor(max_workers=5) as executor:
         user_courses = list(canvas.get_courses(enrollment_state="active"))
         download_count = 0
         progress_course = progress.add_task("Course", total=len(user_courses))
+        progress_module = progress.add_task("Module")
+        progress_items = progress.add_task("Downloading files...")
         for course in user_courses:
             progress.update(
-                progress_course, description=f"Course: {course.course_code}", advance=0
+                progress_course, description=f"Course: {course.course_code}"
             )
             files_regex = rf"{url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
-            modules = list(course.get_modules())
-            progress_module = progress.add_task(
-                "Module", total=len(modules), start=False
-            )
-            for module in modules:
+            for module in (modules := list(course.get_modules())):
                 progress.update(
-                    progress_module, description=f"Module: {module.name}", advance=0
+                    progress_module,
+                    description=f"Module: {module.name}",
+                    total=len(modules),
                 )
-                progress.start_task(progress_module)
-                items = list(module.get_module_items())
-                progress_items = progress.add_task(
-                    "Items", total=len(items), start=False
-                )
-                for item in items:
-                    progress.start_task(progress_items)
+                for item in (items := list(module.get_module_items())):
                     for paths, file in module_item_files(
                         canvas, course, module, files_regex, item
                     ):
                         executor.submit(
                             lambda: download_structured(file, *map(Path, paths))
                         )
-                    progress.update(progress_items, advance=1)
-                progress.remove_task(progress_items)
+                    progress.update(progress_items, advance=1, total=len(items))
                 progress.update(progress_module, advance=1)
-            progress.remove_task(progress_module)
+                progress.reset(progress_items)
             progress.update(progress_course, advance=1)
+            progress.reset(progress_module)
     return download_count
