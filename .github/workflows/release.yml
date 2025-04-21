@@ -1,0 +1,46 @@
+name: Release on Tag
+
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - main
+
+jobs:
+  release:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12" # Adjust to your needs
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh  # Install uv
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH  # Add uv to the PATH
+
+      - name: Install build dependencies
+        run: |
+          uv sync
+
+      - name: Build the package
+        run: |
+          uv build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Release ${{ github.ref_name }}"
+          body_path: CHANGELOG.md # Optional: attach changelog
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
