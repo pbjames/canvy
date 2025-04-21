@@ -79,6 +79,9 @@ def download(canvas: Canvas, url: str) -> int:
         download_count = 0
         progress_course = progress.add_task("Course", total=len(user_courses))
         for course in user_courses:
+            progress.update(
+                progress_course, description=f"Course: {course.course_code}", advance=0
+            )
             resource_regex = rf"{url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
             while file_queue:
                 paths, file = file_queue.pop()
@@ -88,6 +91,9 @@ def download(canvas: Canvas, url: str) -> int:
                 "Module", total=len(modules), start=False
             )
             for module in modules:
+                progress.update(
+                    progress_module, description=f"Module: {module.name}", advance=0
+                )
                 progress.start_task(progress_module)
                 items = list(module.get_module_items())
                 progress_items = progress.add_task(
@@ -100,11 +106,7 @@ def download(canvas: Canvas, url: str) -> int:
                     )
                     progress.update(progress_items, advance=1)
                 progress.remove_task(progress_items)
-                progress.update(
-                    progress_module, advance=1, description=f"Module: {module.name}"
-                )
+                progress.update(progress_module, advance=1)
             progress.remove_task(progress_module)
-            progress.update(
-                progress_course, advance=1, description=f"Course: {course.course_code}"
-            )
+            progress.update(progress_course, advance=1)
     return download_count
