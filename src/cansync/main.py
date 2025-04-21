@@ -1,11 +1,7 @@
-import inspect
 import logging
 import sys
-from collections.abc import Callable
-from functools import wraps
 from getpass import getpass
 from pathlib import Path
-from typing import Any
 
 from canvasapi.canvas import Canvas, Course
 from canvasapi.requester import ResourceDoesNotExist
@@ -27,36 +23,42 @@ cli = Typer()
 logger = logging.getLogger(__name__)
 
 
-def requires_config(func: Callable[..., None]):
+def requires_config() -> tuple[Canvas, CansyncConfig]:
     try:
         config = get_config()
         canvas = Canvas(config.canvas_url, config.canvas_key)
+        return canvas, config
+    except FileNotFoundError:
+        from cansync.utils import set_config
+
+        choice = input("Config file doesn't exist, create one? (Y/n): ").lower() == "y"
+        if not choice:
+            sys.exit(1)
+        config = CansyncConfig(
+            canvas_url=input("Canvas URL: "),
+            canvas_key=getpass("Canvas API Key: "),
+            storage_path=Path(input("Store path (optional): ")) or DEFAULT_DOWNLOAD_DIR,
+            openai_key=getpass("Open AI Key (optional): ") or None,
+        )
+        set_config(config)
+        return requires_config()  # XXX: Might be dangerous :smirking_cat:
+    except ValidationError as e:
+        pprint(f"Input values are incorrect: {e}")
+    except (EOFError, KeyboardInterrupt):
+        pprint("\n[bold red]Closing[/bold red]..")
     except Exception as e:
         pprint(f"Either the config is messed up or the internet is: {e}")
         user_choice = input("Destroy config file? (Y/n): ").lower() == "y"
         if user_choice:
             delete_config()
-        sys.exit(1)
-    names = ["config", "canvas"]
-
-    @wraps(func)
-    def with_config(*args: Any, **kwargs: Any):
-        return func(canvas, config, *args, **kwargs)
-
-    sig = inspect.signature(func)
-    new_params = [
-        param for name, param in sig.parameters.items() if name not in [*names, "_"]
-    ]
-    new_sig = sig.replace(parameters=new_params)
-    with_config.__signature__ = new_sig  # pyright: ignore[reportAttributeAccessIssue]
-    return with_config
+    sys.exit(1)
 
 
 @cli.command(short_help="Download files from Canvas")
-@requires_config
-def download(canvas: Canvas, config: CansyncConfig):
-    from cansync.scripts.downloader import download as download
+def download():
+    from cansync.scripts.downloader import download
 
+    canvas, config = requires_config()
     try:
         count = download(canvas, config.canvas_url)
         pprint(f"[bold]{count}[/bold] new files! :speaking_head: :fire:")
@@ -71,10 +73,10 @@ def download(canvas: Canvas, config: CansyncConfig):
 # TODO: Add more options and add disclaimers, improve tool usage and add a problem sheet
 # making tool
 @cli.command(short_help="Use an assistant to go through the files")
-@requires_config
-def teacher(_: Canvas, config: CansyncConfig):
-    from cansync.scripts.teacher import teacher as teacher
+def teacher():
+    from cansync.scripts.teacher import teacher
 
+    _, config = requires_config()
     try:
         teacher(config)
     except (KeyboardInterrupt, EOFError):
@@ -84,8 +86,8 @@ def teacher(_: Canvas, config: CansyncConfig):
 
 # TODO: Make this pretty printed
 @cli.command(short_help="List available courses")
-@requires_config
-def courses(canvas: Canvas, _: CansyncConfig):
+def courses():
+    canvas, _ = requires_config()
     try:
         courses: list[Course] = list(canvas.get_courses(enrollment_state="active"))
         for course in courses:

@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def canvas_files() -> str:
     """
-    Produce the local directory of Canvas files so that we can extract text
+    Produce the local directory of Canvas files / slides so that we can extract text
     from the appropriate files
 
     Returns:
@@ -39,8 +39,7 @@ def canvas_files() -> str:
 def create_tool(queue: list[Document]):
     def retrieve_knowledge(pdf_rel_path: Path):
         """
-        Retrieve knowledge which will be processed and added to your
-        knowledge base.
+        Retrieve knowledge which will be processed and added to your knowledge base.
 
         Args:
             pdf_rel_path: Relative path given by other tools pointing to a PDF file
