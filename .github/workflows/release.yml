@@ -17,12 +17,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12" # Adjust to your needs
+          python-version: "3.12"
 
       - name: Install uv
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh  # Install uv
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH  # Add uv to the PATH
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Install build dependencies
         run: |
