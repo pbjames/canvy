@@ -3,6 +3,7 @@
 import logging
 import re
 from collections.abc import Generator
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from canvasapi.canvas import Canvas
@@ -73,19 +74,15 @@ def download(canvas: Canvas, url: str) -> int:
     """
     from rich.progress import Progress
 
-    with Progress() as progress:
+    with Progress() as progress, ThreadPoolExecutor(max_workers=5) as executor:
         user_courses = list(canvas.get_courses(enrollment_state="active"))
-        file_queue: list[tuple[list[str], File]] = []
         download_count = 0
         progress_course = progress.add_task("Course", total=len(user_courses))
         for course in user_courses:
             progress.update(
                 progress_course, description=f"Course: {course.course_code}", advance=0
             )
-            resource_regex = rf"{url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
-            while file_queue:
-                paths, file = file_queue.pop()
-                download_count += download_structured(file, *map(Path, paths))
+            files_regex = rf"{url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
             modules = list(course.get_modules())
             progress_module = progress.add_task(
                 "Module", total=len(modules), start=False
@@ -101,9 +98,12 @@ def download(canvas: Canvas, url: str) -> int:
                 )
                 for item in items:
                     progress.start_task(progress_items)
-                    file_queue.extend(
-                        module_item_files(canvas, course, module, resource_regex, item)
-                    )
+                    for paths, file in module_item_files(
+                        canvas, course, module, files_regex, item
+                    ):
+                        executor.submit(
+                            lambda: download_structured(file, *map(Path, paths))
+                        )
                     progress.update(progress_items, advance=1)
                 progress.remove_task(progress_items)
                 progress.update(progress_module, advance=1)
