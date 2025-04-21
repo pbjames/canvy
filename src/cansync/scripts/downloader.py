@@ -2,6 +2,7 @@
 # pyright: reportUnknownMemberType=false
 import logging
 import re
+from collections.abc import Generator
 from pathlib import Path
 
 from canvasapi.canvas import Canvas
@@ -29,30 +30,29 @@ def extract_files_from_page(
 ):
     """
     Use a regex generated from the ID of the course to scrape canvas file links
-    and add them to the download queue
+    and add them to the download queue. We do this because there can be many unmarked
+    or arbitrarily organised files on Canvas, depending on the module organiser.
     """
     page_title = getattr(page, "title", "No Title")
     names = [better_course_name(course.name), module.name, page_title]
     if getattr(page, "body", None) is None:
-        yield None  # INFO: Don't want to stop generator
-    else:
-        logging.info(f"Found page: {page}")
-        for id in re.findall(regex, page.body):
-            logger.info(f"Scanned files({id}) from Page({page.page_id})")
-            if id is not None:
-                try:
-                    yield (names, canvas.get_file(id))
-                except ResourceDoesNotExist as e:
-                    logger.warning(f"Error downloading file from page: {e}")
-                    yield None
-                except Exception:
-                    logger.error(f"Unknown error downloading file {id}")
-                    yield None
+        return
+    logging.info(f"Found page: {page}")
+    for id in re.findall(regex, page.body):
+        if id is None:
+            continue
+        logger.info(f"Scanned file({id}) from Page({page.page_id})")
+        try:
+            yield (names, canvas.get_file(id))
+        except ResourceDoesNotExist as e:
+            logger.warning(f"No access to scrape page: {e}")
+        except Exception:
+            logger.error(f"Unknown error downloading file {id}")
 
 
 def module_item_files(
     canvas: Canvas, course: Course, module: Module, regex: str, item: ModuleItem
-):
+) -> Generator[tuple[list[str], File], None, None]:
     """
     Process module items into the file queue for downloads
     """
@@ -80,7 +80,6 @@ def download(canvas: Canvas, url: str):
             download_structured(file, *map(Path, paths))
         for module in course.get_modules():
             for item in module.get_module_items():
-                item_source = module_item_files(
-                    canvas, course, module, resource_regex, item
+                file_queue.extend(
+                    module_item_files(canvas, course, module, resource_regex, item)
                 )
-                file_queue.extend(filter(None, item_source))

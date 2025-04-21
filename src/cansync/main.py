@@ -17,7 +17,6 @@ from cansync.utils import (
     get_config,
     setup_logging,
 )
-from cansync.utils import set_config as utils_set_config
 
 cli = Typer()
 logger = logging.getLogger(__name__)
@@ -69,6 +68,8 @@ def courses(canvas: Canvas, _: CansyncConfig):
 def set_config(
     canvas_url: str, storage_path: Path | None = None, openai_key: str | None = None
 ):
+    from cansync.utils import set_config
+
     canvas_key = getpass("Canvas API Key: ")
     config = CansyncConfig(
         canvas_url=canvas_url,
@@ -76,7 +77,7 @@ def set_config(
         storage_path=storage_path or DEFAULT_DOWNLOAD_DIR,
         openai_key=openai_key,
     )
-    utils_set_config(config)
+    set_config(config)
 
 
 def main():
