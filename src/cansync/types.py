@@ -50,6 +50,13 @@ class CansyncConfig(BaseModel):
         """
         return str(value)
 
+    @field_serializer("openai_key")
+    def serialize_openai_key(self, value: str | None) -> str:
+        """
+        Deletes field if value is None - causes incorrect config file load
+        """
+        return value or ""
+
 
 # TODO: Make better use of the info from modules (low priority)
 class ModuleItemType(StrEnum):

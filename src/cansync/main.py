@@ -31,13 +31,13 @@ def requires_config() -> tuple[Canvas, CansyncConfig]:
     except FileNotFoundError:
         from cansync.utils import set_config
 
-        choice = input("Config file doesn't exist, create one? (Y/n): ").lower() == "y"
+        choice = input("Config file doesn't exist, create one? (Y/n): ").lower() != "n"
         if not choice:
             sys.exit(1)
         config = CansyncConfig(
             canvas_url=input("Canvas URL: "),
             canvas_key=getpass("Canvas API Key: "),
-            storage_path=Path(input("Store path (optional): ")) or DEFAULT_DOWNLOAD_DIR,
+            storage_path=Path(input("Store path (optional): ") or DEFAULT_DOWNLOAD_DIR),
             openai_key=getpass("Open AI Key (optional): ") or None,
         )
         set_config(config)
@@ -48,7 +48,7 @@ def requires_config() -> tuple[Canvas, CansyncConfig]:
         pprint("\n[bold red]Closing[/bold red]..")
     except Exception as e:
         pprint(f"Either the config is messed up or the internet is: {e}")
-        user_choice = input("Destroy config file? (Y/n): ").lower() == "y"
+        user_choice = input("Destroy config file? (y/N): ").lower() == "y"
         if user_choice:
             delete_config()
     sys.exit(1)
