@@ -70,7 +70,7 @@ def module_item_files(
         yield (names, file)
 
 
-def download(canvas: Canvas, url: str) -> int:
+def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
     """
     Download every file accessible through a Canvas account through courses and modules
     """
@@ -100,7 +100,9 @@ def download(canvas: Canvas, url: str) -> int:
                         canvas, course, module, files_regex, item
                     ):
                         executor.submit(
-                            lambda: download_structured(file, *map(Path, paths))
+                            lambda: download_structured(
+                                file, *map(Path, paths), force=force
+                            )
                         )
                     progress.update(progress_items, advance=1, total=len(items))
                 progress.update(progress_module, advance=1)

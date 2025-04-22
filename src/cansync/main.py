@@ -14,6 +14,7 @@ from cansync.const import (
 )
 from cansync.types import CansyncConfig
 from cansync.utils import (
+    better_course_name,
     delete_config,
     get_config,
     setup_logging,
@@ -55,12 +56,12 @@ def requires_config() -> tuple[Canvas, CansyncConfig]:
 
 
 @cli.command(short_help="Download files from Canvas")
-def download():
+def download(*, force: bool = False):
     from cansync.scripts.downloader import download
 
     canvas, config = requires_config()
     try:
-        count = download(canvas, config.canvas_url)
+        count = download(canvas, config.canvas_url, force=force)
         pprint(f"[bold]{count}[/bold] new files! :speaking_head: :fire:")
     except (KeyboardInterrupt, EOFError):
         pprint("[bold red]Download stopping[/bold red]...")
@@ -84,14 +85,33 @@ def teacher():
         sys.exit(0)
 
 
-# TODO: Make this pretty printed
 @cli.command(short_help="List available courses")
-def courses():
+def courses(*, detailed: bool = False):
     canvas, _ = requires_config()
     try:
+        # TODO: Give better information like grades
         courses: list[Course] = list(canvas.get_courses(enrollment_state="active"))
-        for course in courses:
-            print(f"{course}")  # noqa: T201
+        if detailed:
+            from rich.console import Console
+            from rich.table import Table
+
+            table = Table(title="Courses")
+            table.add_column("No. Students", style="bold green")
+            table.add_column("Title", style="bold")
+            table.add_column("Creation date")
+            table.add_column("Start date")
+            for course in courses:
+                table.add_row(
+                    getattr(course, "total_students", ""),
+                    better_course_name(course.name),
+                    course.created_at,
+                    getattr(course, "start_at", ""),
+                )
+            console = Console()
+            console.print(table)
+        else:
+            for course in courses:
+                print(f"{course}")  # noqa: T201
     except ResourceDoesNotExist as e:
         pprint(f"We probably don't have access to this course: {e}")
     except Exception as e:
