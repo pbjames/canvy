@@ -1,4 +1,3 @@
-import json
 import logging.config
 import os
 import re
@@ -6,9 +5,12 @@ from functools import reduce
 from pathlib import Path
 
 import toml
+from agno.models.base import Model
+from agno.models.ollama import Ollama
+from agno.models.openai.chat import OpenAIChat
 from canvasapi.file import File
 
-from cansync.const import CONFIG_PATH, LOG_FN, LOGGING_CONFIG
+from cansync.const import CONFIG_PATH, LOG_FN, LOGGING_CONFIG, OPENAI_MODEL
 from cansync.types import CansyncConfig
 
 logger = logging.getLogger(__name__)
@@ -103,3 +105,29 @@ def download_structured(file: File, *dirs: Path, force: bool = False) -> bool:
     else:
         logger.info(f"{filename} already present, skipping")
         return False
+
+
+def provider(config: CansyncConfig) -> Model:
+    """
+    Get the preferred model provider from the config, default is OpenAI because
+    lazy people. Implemented config check to prevent ambiguous errors
+
+    Args:
+        config: Config with provider
+
+    Returns:
+        Model: Agno model type to use, of which there are many
+    """
+    e = "Model set to {} but the key isn't in the config"
+    if config.default_provider == "OpenAI":
+        if (key := config.openai_key) is not None:
+            return OpenAIChat(id=OPENAI_MODEL, api_key=key)
+        else:
+            raise ValueError(e.format("OpenAI"))
+    elif config.default_provider == "Ollama":
+        if (model := config.ollama_model) is not None:
+            return Ollama(id=model)
+        else:
+            raise ValueError(e.format("ollama"))
+    e = f'Provider "{config.default_provider}" is not a valid provider of models'
+    raise ValueError(e)

@@ -12,7 +12,7 @@ from typer import Typer
 from cansync.const import (
     DEFAULT_DOWNLOAD_DIR,
 )
-from cansync.types import CansyncConfig
+from cansync.types import CansyncConfig, ModelProvider
 from cansync.utils import (
     better_course_name,
     delete_config,
@@ -40,6 +40,8 @@ def requires_config() -> tuple[Canvas, CansyncConfig]:
             canvas_key=getpass("Canvas API Key: "),
             storage_path=Path(input("Store path (optional): ") or DEFAULT_DOWNLOAD_DIR),
             openai_key=getpass("Open AI Key (optional): ") or None,
+            ollama_model=input("Ollama model (optional): ") or None,
+            default_provider="OpenAI",
         )
         set_config(config)
         return requires_config()  # XXX: Might be dangerous :smirking_cat:
@@ -120,7 +122,11 @@ def courses(*, detailed: bool = False):
 
 @cli.command(short_help="Set up config to use the rest of the tool")
 def set_config(
-    canvas_url: str, storage_path: Path | None = None, openai_key: str | None = None
+    canvas_url: str,
+    storage_path: Path | None = None,
+    openai_key: str | None = None,
+    ollama_model: str | None = None,
+    default_provider: ModelProvider | None = None,
 ):
     from cansync.utils import set_config
 
@@ -131,6 +137,8 @@ def set_config(
             canvas_key=canvas_key,
             storage_path=storage_path or DEFAULT_DOWNLOAD_DIR,
             openai_key=openai_key,
+            ollama_model=ollama_model,
+            default_provider=default_provider or "OpenAI",
         )
         set_config(config)
     except ValidationError as e:

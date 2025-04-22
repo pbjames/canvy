@@ -13,7 +13,7 @@ from cansync.const import (
     OPENAI_MODEL,
 )
 from cansync.types import CansyncConfig
-from cansync.utils import get_config
+from cansync.utils import get_config, provider
 
 logger = logging.getLogger(__name__)
 
@@ -66,14 +66,13 @@ def teacher(config: CansyncConfig) -> None:
     from agno.agent.agent import Agent
     from agno.embedder.openai import OpenAIEmbedder
     from agno.knowledge.pdf import PDFKnowledgeBase
-    from agno.models.openai.chat import OpenAIChat
     from agno.tools.duckduckgo import DuckDuckGoTools
     from agno.vectordb.qdrant.qdrant import Qdrant
     from agno.vectordb.search import SearchType
 
     new_knowledge_queue: list[Document] = []
     agent = Agent(
-        model=OpenAIChat(id=OPENAI_MODEL, api_key=config.openai_key),
+        model=provider(config),
         description=AGENT_DESCRIPTION,
         instructions=AGENT_INSTRUCTIONS,
         knowledge=PDFKnowledgeBase(
