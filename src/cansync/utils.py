@@ -68,7 +68,7 @@ def set_config(config: CansyncConfig, dest: Path = CONFIG_PATH) -> None:
     dest = dest if dest else CONFIG_PATH
     with open(dest, "w") as fp:
         logger.debug("Writing config")
-        toml.dump(config.model_dump(), fp)  # pyright: ignore[reportAny]
+        toml.dump(config.model_dump(), fp)
 
 
 def delete_config(path: Path = CONFIG_PATH):

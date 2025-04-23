@@ -10,11 +10,13 @@ from rich import print as pprint
 from typer import Typer
 
 from cansync.const import (
+    CONFIG_PATH,
     DEFAULT_DOWNLOAD_DIR,
 )
 from cansync.types import CansyncConfig, ModelProvider
 from cansync.utils import (
     better_course_name,
+    create_dir,
     delete_config,
     get_config,
     setup_logging,
@@ -148,6 +150,7 @@ def set_config(
 
 
 def main():
+    create_dir(CONFIG_PATH.parent)
     setup_logging()
     cli()
     # TODO: Use tests
