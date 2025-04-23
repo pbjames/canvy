@@ -1,10 +1,7 @@
-from __future__ import annotations
-
 import logging
 import os
 from enum import StrEnum
 from pathlib import Path
-from typing import Literal
 
 from pydantic import BaseModel, Field, field_serializer, field_validator
 
@@ -23,13 +20,20 @@ from cansync.const import (
 logger = logging.getLogger(__name__)
 
 
+class ModelProvider(StrEnum):
+    OLLAMA = "Ollama"
+    OPENAI = "OpenAI"
+
+
 class CansyncConfig(BaseModel):
     canvas_key: str = Field(description=API_KEY_DESC, pattern=API_KEY_REGEX)
     canvas_url: str = Field(description=EDU_URL_DESC, pattern=URL_REGEX)
     openai_key: str | None = Field(description=OPENAI_KEY_DESC, pattern=API_SK_REGEX)
     ollama_model: str | None = Field(description=OLLAMA_MODEL_DESC)
     storage_path: Path = Field(description=STORAGE_PATH_DESC)
-    default_provider: ModelProvider = Field("OpenAI", description=DEFAULT_PROVIDER_DESC)
+    default_provider: ModelProvider = Field(
+        ModelProvider.OPENAI, description=DEFAULT_PROVIDER_DESC
+    )
 
     @field_validator("storage_path")
     @classmethod
@@ -63,9 +67,6 @@ class CansyncConfig(BaseModel):
         Deletes field if value is None - causes incorrect config file load
         """
         return value or ""
-
-
-ModelProvider = Literal["Ollama", "OpenAI"]
 
 
 # TODO: Make better use of the info from modules (low priority)

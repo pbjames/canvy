@@ -41,7 +41,7 @@ def requires_config() -> tuple[Canvas, CansyncConfig]:
             storage_path=Path(input("Store path (optional): ") or DEFAULT_DOWNLOAD_DIR),
             openai_key=getpass("Open AI Key (optional): ") or None,
             ollama_model=input("Ollama model (optional): ") or None,
-            default_provider="OpenAI",
+            default_provider=ModelProvider.OPENAI,
         )
         set_config(config)
         return requires_config()  # XXX: Might be dangerous :smirking_cat:
@@ -138,7 +138,7 @@ def set_config(
             storage_path=storage_path or DEFAULT_DOWNLOAD_DIR,
             openai_key=openai_key,
             ollama_model=ollama_model,
-            default_provider=default_provider or "OpenAI",
+            default_provider=default_provider or ModelProvider.OPENAI,
         )
         set_config(config)
     except ValidationError as e:
