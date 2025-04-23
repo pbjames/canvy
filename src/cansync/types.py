@@ -8,7 +8,6 @@ from pydantic import BaseModel, Field, field_serializer, field_validator
 from cansync.const import (
     API_KEY_DESC,
     API_KEY_REGEX,
-    API_SK_REGEX,
     DEFAULT_PROVIDER_DESC,
     EDU_URL_DESC,
     OLLAMA_MODEL_DESC,

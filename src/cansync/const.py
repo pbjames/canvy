@@ -15,6 +15,20 @@ logger = logging.getLogger(__name__)
 OPENAI_MODEL: Final[str] = "gpt-4.1-mini"
 OPENAI_EMBEDDINGS: Final[str] = "text-embedding-3-small"
 
+PROBLEM_SHEET_1: Final[
+    str
+] = """
+#import "@preview/problemst:0.1.2": pset
+#show: pset.with(
+  class: {},
+  student: {},
+  title: {},
+  date: datetime.today(),
+)
+"""
+
+STOP_WORDS: tuple[str, str, str] = "quit", "/q", "exit"
+
 AGENT_DESCRIPTION: Final[
     str
 ] = """
@@ -32,7 +46,6 @@ URL_REGEX: Final[str] = (
     r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]"
     + r"{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)"
 )
-API_SK_REGEX: Final[str] = "sk-([a-z]*-)?[a-zA-Z0-9]{40,}"
 API_KEY_REGEX: Final[str] = r"\d{4}~[A-Za-z0-9]{64}"
 API_KEY_DESC: Final[str] = (
     "API key provided by Canvas which grants access to the API through your account"

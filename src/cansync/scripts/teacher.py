@@ -10,12 +10,49 @@ from cansync.const import (
     AGENT_DESCRIPTION,
     AGENT_INSTRUCTIONS,
     OPENAI_EMBEDDINGS,
-    OPENAI_MODEL,
+    PROBLEM_SHEET_1,
+    STOP_WORDS,
 )
 from cansync.types import CansyncConfig
-from cansync.utils import get_config, provider
+from cansync.utils import create_dir, get_config, provider
 
 logger = logging.getLogger(__name__)
+
+
+def validate_typst(content: str) -> tuple[bool, str]:
+    v = True, ""
+    return v
+
+
+def make_problem_sheet(file_name: str, content: str) -> str:
+    """
+    Produce a problem sheet for the user by recycling content from relevant slides
+    and prior knowledge to make enganging yet conformant problems for revision.
+
+    Args:
+        file_name: File name ending in .pdf which denotes which topic the sheet is about
+        content: Body of the sheet which is written in vanilla typst (important) language
+
+    Return:
+        Result
+    """
+    import typst
+
+    res, err = validate_typst(content)
+    if not res:
+        return err
+
+    config = get_config()
+    sheets_dir = config.storage_path / "Problem Sheets"
+    create_dir(sheets_dir)
+    content = f"""
+{PROBLEM_SHEET_1.format("class", "student", "title")}
+{content}
+    """
+    out = typst.compile(content.encode("utf-8"))
+    with open(sheets_dir / file_name, "wb") as fp:
+        fp.write(out)
+    return "Done"
 
 
 def canvas_files() -> str:
@@ -86,17 +123,21 @@ def teacher(config: CansyncConfig) -> None:
                 ),
             ),
         ),
-        tools=[DuckDuckGoTools(), canvas_files, create_tool(new_knowledge_queue)],
-        add_references=True,
+        tools=[
+            DuckDuckGoTools(),
+            canvas_files,
+            create_tool(new_knowledge_queue),
+            make_problem_sheet,
+        ],
         show_tool_calls=True,
         add_history_to_messages=True,
         num_history_runs=3,
         read_chat_history=True,
-        markdown=False,
+        markdown=True,
     )
     while True:
         user_input = input(">>> ")
-        if user_input in ["quit", "/q", "exit"]:
+        if user_input in STOP_WORDS:
             sys.exit(0)
         agent.print_response(user_input)  # pyright: ignore[reportUnknownMemberType]
         if new_knowledge_queue and agent.knowledge is not None:

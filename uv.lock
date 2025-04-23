@@ -78,6 +78,7 @@ dependencies = [
     { name = "rich" },
     { name = "toml" },
     { name = "typer" },
+    { name = "typst" },
 ]
 
 [package.metadata]
@@ -95,6 +96,7 @@ requires-dist = [
     { name = "rich", specifier = ">=14.0.0" },
     { name = "toml", specifier = ">=0.10.2" },
     { name = "typer", specifier = ">=0.15.2" },
+    { name = "typst", specifier = ">=0.13.2" },
 ]
 
 [[package]]
@@ -1118,6 +1120,22 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/82/5c/e6082df02e215b846b4b8c0b887a64d7d08ffaba30605502639d44c06b82/typing_inspection-0.4.0.tar.gz", hash = "sha256:9765c87de36671694a67904bf2c96e395be9c6439bb6c87b5142569dcdd65122", size = 76222 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/31/08/aa4fdfb71f7de5176385bd9e90852eaf6b5d622735020ad600f2bab54385/typing_inspection-0.4.0-py3-none-any.whl", hash = "sha256:50e72559fcd2a6367a19f7a7e610e6afcb9fac940c650290eed893d61386832f", size = 14125 },
+]
+
+[[package]]
+name = "typst"
+version = "0.13.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/84/e6c135449a9df3e1d5b81156db2decd84a089439212f2d0a1f754a558d3f/typst-0.13.2.tar.gz", hash = "sha256:ee84c54886bf1c1890dd064819d9d2e332e1ae1fff89a3615fae429b239305a4", size = 38968 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fe/0f/38514b1ac2f2194d1e10dd08bcfcf0f97918d0b742999399451811419c26/typst-0.13.2-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:6d3c5e9372fbfc4b8176fafb5cac35d29693e437b8e15f91cc00523ddd071569", size = 18668206 },
+    { url = "https://files.pythonhosted.org/packages/a0/e2/fc210e0a1436c261f2fa442550054218c3318eeba40abd383c47b06b0c94/typst-0.13.2-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:cd4d880e94b91028184cd167dda4e950264a8ea628841a48842d3e8453558a95", size = 18184589 },
+    { url = "https://files.pythonhosted.org/packages/10/c9/0028a05bcaae0fbf6ef4e987784db5e23b0981a5d5fb5a89b1c95b7107b1/typst-0.13.2-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6abf9352540af30bcbb1687e4d00f0d0e7115db27db1b71b901df15abaf2086a", size = 21700856 },
+    { url = "https://files.pythonhosted.org/packages/2a/64/c03db1f6824a2c7792d7ce5ede7e8e28db05dc63000cb748f84ac8539f94/typst-0.13.2-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:d558ee6fb449714955297b026cc2f567f44c991b6b7d32d8ba5262150f267603", size = 21852362 },
+    { url = "https://files.pythonhosted.org/packages/43/d1/fe1170f1692fc9f4fcfd61b4447be75e7b1b8653b55cb80737919bcc0df7/typst-0.13.2-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:0b9e542d136741df846f15ed23e110475d4c82e1f0f29ab948cd3344bcc8181e", size = 22136479 },
+    { url = "https://files.pythonhosted.org/packages/15/9f/9c056dbbff5a57e58a666cf576dd7053086f5826e5552796ad45d23202c5/typst-0.13.2-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:3939b7cc16abc0f753015c886f8173f3a0a289ebc828d886c0f2284415d20490", size = 23443993 },
+    { url = "https://files.pythonhosted.org/packages/23/aa/4a774bb4b31ff5865e4aeafe26180c58d76ba6eebd688690b4bc63197bb1/typst-0.13.2-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5c2a78e01b897e3075b6bc01b0bf7738ae110550394d7be1ec51de178ccd5e8c", size = 21712749 },
+    { url = "https://files.pythonhosted.org/packages/a6/81/3a2bb633622c81c03b1ab7de0b7dc82ed44f9f0e2d65699f3d0c357a043e/typst-0.13.2-cp38-abi3-win_amd64.whl", hash = "sha256:897829e5ddfad5ace94f3f378ce7c6d580b78402af92e66eed5b28cb98186b57", size = 17446971 },
 ]
 
 [[package]]
