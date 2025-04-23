@@ -26,6 +26,12 @@ cli = Typer()
 logger = logging.getLogger(__name__)
 
 
+def add_https(url: str):
+    if url.startswith("https://") or url.startswith("http://"):
+        return url
+    return f"https://{url}"
+
+
 def requires_config() -> tuple[Canvas, CansyncConfig]:
     try:
         config = get_config()
@@ -38,7 +44,7 @@ def requires_config() -> tuple[Canvas, CansyncConfig]:
         if not choice:
             sys.exit(1)
         config = CansyncConfig(
-            canvas_url=input("Canvas URL: "),
+            canvas_url=add_https(input("Canvas URL: ")),
             canvas_key=getpass("Canvas API Key: "),
             storage_path=Path(input("Store path (optional): ") or DEFAULT_DOWNLOAD_DIR),
             openai_key=getpass("Open AI Key (optional): ") or None,
@@ -135,7 +141,7 @@ def set_config(
     try:
         canvas_key = getpass("Canvas API Key: ")
         config = CansyncConfig(
-            canvas_url=canvas_url,
+            canvas_url=add_https(canvas_url),
             canvas_key=canvas_key,
             storage_path=storage_path or DEFAULT_DOWNLOAD_DIR,
             openai_key=openai_key,
