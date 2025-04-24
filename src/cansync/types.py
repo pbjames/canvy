@@ -76,7 +76,7 @@ class CansyncConfig(BaseModel):
         return str(value)
 
 
-# TODO: Make better use of the info from modules (low priority)
+# INFO: Used for the children of modules (ModuleItem)
 class ModuleItemType(StrEnum):
     HEADER = "SubHeader"
     PAGE = "Page"
@@ -86,3 +86,12 @@ class ModuleItemType(StrEnum):
     ATTACHMENT = "File"
     DISCUSSION = "Discussion"
     ASSIGNMENT = "Assignment"
+
+
+# INFO: Used for assignments
+class SubmissionType(StrEnum):
+    FILE_UPLOAD = "online_upload"
+    TEXT_ENTRY = "online_text_entry"
+    URL_ENTRY = "online_url"
+    RECORDING = "media_recording"
+    ANNOTATION = "student_annotation"

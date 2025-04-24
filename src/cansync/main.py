@@ -107,7 +107,6 @@ def teacher():
 def courses(*, detailed: bool = False):
     canvas, _ = requires_config()
     try:
-        # TODO: Give better information like grades
         courses: list[Course] = list(canvas.get_courses(enrollment_state="active"))
         if detailed:
             from rich.console import Console
@@ -151,8 +150,9 @@ def grades(*, course_only: bool = False):
 
 
 @cli.command(short_help="Set up config to use the rest of the tool")
-def set_config(
-    canvas_url: str,
+def set_config(  # noqa: PLR0913
+    canvas_url: str | None = None,
+    canvas_key: str | None = None,
     storage_path: Path | None = None,
     openai_key: str | None = None,
     ollama_model: str | None = None,
@@ -161,10 +161,9 @@ def set_config(
     from cansync.utils import set_config
 
     try:
-        canvas_key = getpass("Canvas API Key: ")
         config = CansyncConfig(
-            canvas_url=add_https(canvas_url),
-            canvas_key=canvas_key,
+            canvas_url=add_https(canvas_url or input("Canvas URL -> https://")),
+            canvas_key=canvas_key or getpass("Canvas API Key: "),
             storage_path=storage_path or DEFAULT_DOWNLOAD_DIR,
             openai_key=openai_key,
             ollama_model=ollama_model,

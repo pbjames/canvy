@@ -8,6 +8,9 @@ from canvasapi.grade_change_log import GradeChangeEvent
 logger = logging.getLogger(__name__)
 
 
+# TODO: Decide whether canvas will ever give us permissions for grades
+
+
 def grades_by_course(canvas: Canvas) -> dict[str, float]:
     return {
         course.course_code: calculate_grading(assignment)
@@ -38,6 +41,7 @@ def calculate_grading(assignment: Assignment) -> float | None:
         logger.warning(f"Error fetching grade events: {e}")
         return None
     if not grade_events:
+        logger.warning(f"Grade events for {assignment.name} are empty!")
         return None
     grade_events.sort(key=grade_change_value)
     last_event = grade_events.pop()
