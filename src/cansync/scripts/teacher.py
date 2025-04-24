@@ -3,6 +3,7 @@ import os
 import sys
 from pathlib import Path
 
+import typst
 from agno.document.base import Document
 from agno.document.reader.pdf_reader import PDFReader
 
@@ -19,39 +20,43 @@ from cansync.utils import create_dir, get_config, provider
 logger = logging.getLogger(__name__)
 
 
-def validate_typst(content: str) -> tuple[bool, str]:
-    v = True, ""
-    return v
+def validate_typst(content: str) -> tuple[bool, bytes]:
+    try:
+        logger.info(f"content: {content}")
+        converted = typst.compile(content.encode("utf-8"))
+        return (True, converted)
+    except Exception as e:
+        logger.warning(f"Shit doesn't compile: {e}")
+        return (False, str(e).encode("utf-8"))
 
 
 def make_problem_sheet(file_name: str, content: str) -> str:
     """
     Produce a problem sheet for the user by recycling content from relevant slides
-    and prior knowledge to make enganging yet conformant problems for revision.
+    and prior knowledge to make engaging yet conformant problems for revision. Focus
+    heavily on what the user is asking for.
 
     Args:
-        file_name: File name ending in .pdf which denotes which topic the sheet is about
-        content: Body of the sheet which is written in vanilla typst (important) language
+        file_name: File name ending in .pdf
+        content: Body of the sheet - use normal markdown with many headings
 
     Return:
         Result
     """
-    import typst
-
-    res, err = validate_typst(content)
+    res, body = validate_typst(
+        f"""r
+{PROBLEM_SHEET_1}
+{content.replace("#", "=")}
+    """
+    )
     if not res:
-        return err
-
+        return body.decode("utf-8")
     config = get_config()
     sheets_dir = config.storage_path / "Problem Sheets"
     create_dir(sheets_dir)
-    content = f"""
-{PROBLEM_SHEET_1.format("class", "student", "title")}
-{content}
-    """
-    out = typst.compile(content.encode("utf-8"))
     with open(sheets_dir / file_name, "wb") as fp:
-        fp.write(out)
+        fp.write(body)
+    logger.info("File written successfully")
     return "Done"
 
 

@@ -7,6 +7,7 @@ from canvasapi.canvas import Canvas, Course
 from canvasapi.requester import ResourceDoesNotExist
 from pydantic import ValidationError
 from rich import print as pprint
+from rich.prompt import Prompt
 from typer import Typer
 
 from cansync.const import (
@@ -40,7 +41,12 @@ def requires_config() -> tuple[Canvas, CansyncConfig]:
     except FileNotFoundError:
         from cansync.utils import set_config
 
-        choice = input("Config file doesn't exist, create one? (Y/n): ").lower() != "n"
+        choice = (
+            Prompt.ask(
+                "Config file doesn't exist, create one?", choices=["Y", "n"]
+            ).lower()
+            != "n"
+        )
         if not choice:
             sys.exit(1)
         config = CansyncConfig(
@@ -59,7 +65,9 @@ def requires_config() -> tuple[Canvas, CansyncConfig]:
         pprint("\n[bold red]Closing[/bold red]..")
     except Exception as e:
         pprint(f"Either the config is messed up or the internet is: {e}")
-        user_choice = input("Destroy config file? (y/N): ").lower() == "y"
+        user_choice = (
+            Prompt.ask("Destroy config file?", choices=["n", "Y"]).lower() == "y"
+        )
         if user_choice:
             delete_config()
     sys.exit(1)
@@ -81,8 +89,6 @@ def download(*, force: bool = False):
         sys.exit(1)
 
 
-# TODO: Add more options and add disclaimers, improve tool usage and add a problem sheet
-# making tool
 @cli.command(short_help="Use an assistant to go through the files")
 def teacher():
     from cansync.scripts.teacher import teacher

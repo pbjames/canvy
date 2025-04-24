@@ -20,9 +20,9 @@ PROBLEM_SHEET_1: Final[
 ] = """
 #import "@preview/problemst:0.1.2": pset
 #show: pset.with(
-  class: {},
-  student: {},
-  title: {},
+  class: "placeholder",
+  student: "Mike Hokurts",
+  title: "placeholder",
   date: datetime.today(),
 )
 """
