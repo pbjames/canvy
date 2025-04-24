@@ -74,13 +74,26 @@ def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
     """
     Download every file accessible through a Canvas account through courses and modules
     """
+    from threading import Lock
+
     from rich.progress import Progress
 
-    # TODO: Make this return the download count once again, clean exit again and make
-    # canvasapi calls faster using executor.map on paginated lists if we can
+    # TODO: Clean exit again and make canvasapi calls faster using executor.map on
+    # paginated lists if we can
+    count_lock = Lock()
+    download_count = 0
+
+    def safe_download(file, *paths):
+        def inner():
+            res = download_structured(file, *map(Path, paths), force=force)
+            with count_lock:
+                nonlocal download_count
+                download_count += res
+
+        return inner
+
     with Progress() as progress, ThreadPoolExecutor(max_workers=5) as executor:
         user_courses = list(canvas.get_courses(enrollment_state="active"))
-        download_count = 0
         progress_course = progress.add_task("Course", total=len(user_courses))
         progress_module = progress.add_task("Module")
         progress_items = progress.add_task("Downloading files...")
@@ -99,12 +112,13 @@ def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
                     for paths, file in module_item_files(
                         canvas, course, module, files_regex, item
                     ):
-                        executor.submit(
-                            lambda: download_structured(
-                                file, *map(Path, paths), force=force
-                            )
+                        progress.update(
+                            progress_items,
+                            description=f"File: {file.filename}",
+                            total=len(items),
                         )
-                    progress.update(progress_items, advance=1, total=len(items))
+                        executor.submit(safe_download(file, *paths))
+                    progress.update(progress_items, advance=1)
                 progress.update(progress_module, advance=1)
                 progress.reset(progress_items)
             progress.update(progress_course, advance=1)

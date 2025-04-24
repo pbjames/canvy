@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # TODO: Decide whether canvas will ever give us permissions for grades
 
 
-def grades_by_course(canvas: Canvas) -> dict[str, float]:
+def grades_by_course(canvas: Canvas) -> dict[str, float | None]:
     return {
         course.course_code: calculate_grading(assignment)
         for course in canvas.get_courses()
@@ -19,7 +19,7 @@ def grades_by_course(canvas: Canvas) -> dict[str, float]:
     }
 
 
-def grades(canvas: Canvas) -> dict[str, dict[str, float]]:
+def grades(canvas: Canvas) -> dict[str, dict[str, float | None]]:
     return {
         course.course_code: {
             assignment.name: calculate_grading(assignment)
