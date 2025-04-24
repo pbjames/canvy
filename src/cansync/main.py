@@ -3,6 +3,8 @@ import sys
 from getpass import getpass
 from pathlib import Path
 
+from cansync.scripts.grades import grades_by_course
+from canvasapi.assignment import Assignment
 from canvasapi.canvas import Canvas, Course
 from canvasapi.requester import ResourceDoesNotExist
 from pydantic import ValidationError
@@ -128,6 +130,20 @@ def courses(*, detailed: bool = False):
         else:
             for course in courses:
                 print(f"{course}")  # noqa: T201
+    except ResourceDoesNotExist as e:
+        pprint(f"We probably don't have access to this course: {e}")
+    except Exception as e:
+        pprint(f"Unknown error: {e}")
+
+
+@cli.command(short_help="Get grades for each course and assignment")
+def grades(*, course_only: bool = False):
+    from cansync.scripts.grades import grades
+
+    canvas, _ = requires_config()
+    try:
+        stuff = grades_by_course(canvas) if course_only else grades(canvas)
+        pprint(stuff)
     except ResourceDoesNotExist as e:
         pprint(f"We probably don't have access to this course: {e}")
     except Exception as e:
