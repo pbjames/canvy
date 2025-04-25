@@ -179,7 +179,6 @@ def main():
     create_dir(CONFIG_PATH.parent)
     setup_logging()
     cli()
-    # TODO: Use tests
 
 
 if __name__ == "__main__":

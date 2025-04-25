@@ -29,7 +29,7 @@ def better_course_name(name: str) -> str:
     """
     Removes ID numbers next to the given title of the course
     """
-    return re.sub(r" \((\d,? ?)+\)", "", name)
+    return re.sub(r" ?\((\d,? ?)+\) ?", "", name)
 
 
 def create_dir(directory: Path) -> None:

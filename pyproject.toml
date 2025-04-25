@@ -20,6 +20,8 @@ dependencies = [
   "platformdirs>=4.3.7",
   "pydantic>=2.11.3",
   "pypdf>=5.4.0",
+  "pytest>=8.3.5",
+  "pytest-cov>=6.1.1",
   "qdrant-client>=1.13.3",
   "rich>=14.0.0",
   "toml>=0.10.2",
@@ -80,14 +82,28 @@ lint.select = [
 lint.ignore = [
   "A001",
   "A002",
-  "A003",    # shadowing built-in functions
-  "PLC0414", # 'as' imports not renaming anything
-  "ISC",     # 'hatch fmt' command conflicts
+  "A003", # shadowing built-in functions
 ]
 lint.unfixable = [
   # Don't touch unused imports
   # "F401",
 ]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --cov=src --import-mode=importlib"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.isort]
+profile = "black"
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
