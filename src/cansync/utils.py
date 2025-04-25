@@ -56,7 +56,9 @@ def delete_config(path: Path = CONFIG_PATH):
     os.remove(path)
 
 
-def download_structured(file: File, *dirs: Path, force: bool = False) -> bool:
+def download_structured(
+    file: File, *dirs: Path, storage_dir: Path | None = None, force: bool = False
+) -> bool:
     """
     Download a canvasapi File and preserve course structure using directory names
 
@@ -68,7 +70,7 @@ def download_structured(file: File, *dirs: Path, force: bool = False) -> bool:
     Returns:
         If the file was downloaded
     """
-    download_dir = Path(get_config().storage_path).expanduser()
+    download_dir = Path(storage_dir or get_config().storage_path).expanduser()
     path: Path = reduce(lambda p, q: p / q, [download_dir, *dirs])
     filename: str = file.filename  # pyright: ignore[reportAny]
     file_path: Path = path / filename
