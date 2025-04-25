@@ -78,12 +78,10 @@ def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
 
     from rich.progress import Progress
 
-    # TODO: Clean exit again and make canvasapi calls faster using executor.map on
-    # paginated lists if we can
     count_lock = Lock()
     download_count = 0
 
-    def safe_download(file, *paths):
+    def safe_download(file: File, *paths: str):
         def inner():
             res = download_structured(file, *map(Path, paths), force=force)
             with count_lock:

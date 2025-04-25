@@ -3,8 +3,6 @@ import sys
 from getpass import getpass
 from pathlib import Path
 
-from cansync.scripts.grades import grades_by_course
-from canvasapi.assignment import Assignment
 from canvasapi.canvas import Canvas, Course
 from canvasapi.requester import ResourceDoesNotExist
 from pydantic import ValidationError
@@ -16,6 +14,7 @@ from cansync.const import (
     CONFIG_PATH,
     DEFAULT_DOWNLOAD_DIR,
 )
+from cansync.scripts.grades import grades_by_course
 from cansync.types import CansyncConfig, ModelProvider
 from cansync.utils import (
     better_course_name,

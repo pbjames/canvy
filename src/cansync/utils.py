@@ -16,25 +16,6 @@ from cansync.types import CansyncConfig
 logger = logging.getLogger(__name__)
 
 
-def verify_accessible_path(p: Path) -> bool:
-    """
-    Test if the user can access a given path to prevent compounding
-    files access errors
-    """
-    if p.exists():
-        return p.owner() == os.getlogin()
-
-    try:
-        p.mkdir(parents=True)
-        return True
-    except PermissionError as e:
-        logger.warning(e)
-        return False
-    except Exception as e:
-        logger.warning(f"Unknown path resolution error: '{e}'")
-        return False
-
-
 def setup_logging() -> None:
     """
     Setup logging using logging config defined in const.py because it's

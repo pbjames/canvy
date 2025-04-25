@@ -30,7 +30,9 @@ def validate_typst(content: str) -> tuple[bool, bytes]:
         return (False, str(e).encode("utf-8"))
 
 
-def make_problem_sheet(file_name: str, content: str) -> str:
+def make_problem_sheet(
+    file_name: str, class_name: str, title: str, content: str
+) -> str:
     """
     Produce a problem sheet for the user by recycling content from relevant slides
     and prior knowledge to make engaging yet conformant problems for revision. Focus
@@ -38,14 +40,16 @@ def make_problem_sheet(file_name: str, content: str) -> str:
 
     Args:
         file_name: File name ending in .pdf
-        content: Body of the sheet - use normal markdown with many headings
+        class_name: Name of the current module or class the topic falls under
+        title: Title of the problem sheet
+        content: Body of the problem sheet - use normal markdown with many headings
 
     Return:
         Result
     """
     res, body = validate_typst(
         f"""r
-{PROBLEM_SHEET_1}
+{PROBLEM_SHEET_1.format(class_name=class_name, student="Mike Hockurts", title=title)}
 {content.replace("#", "=")}
     """
     )
@@ -71,14 +75,14 @@ def canvas_files() -> str:
     config = get_config()
     return str(
         {
-            fn: Path(dor).relative_to(config.storage_path) / fn
-            for dor, _, fns in os.walk(config.storage_path)
+            fn: Path(dir).relative_to(config.storage_path) / fn
+            for dir, _, fns in os.walk(config.storage_path)
             for fn in fns
         }
     )
 
 
-def create_tool(queue: list[Document]):
+def create_retriever(queue: list[Document]):
     def retrieve_knowledge(pdf_rel_path: Path):
         """
         Retrieve knowledge which will be processed and added to your knowledge base.
@@ -131,7 +135,7 @@ def teacher(config: CansyncConfig) -> None:
         tools=[
             DuckDuckGoTools(),
             canvas_files,
-            create_tool(new_knowledge_queue),
+            create_retriever(new_knowledge_queue),
             make_problem_sheet,
         ],
         show_tool_calls=True,
