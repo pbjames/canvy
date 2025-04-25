@@ -22,7 +22,7 @@ def setup_logging() -> None:
     quite good
     """
     create_dir(LOG_FN.parent)
-    logging.config.dictConfig(LOGGING_CONFIG)
+    return logging.config.dictConfig(LOGGING_CONFIG)
 
 
 def better_course_name(name: str) -> str:
@@ -57,7 +57,7 @@ def delete_config(path: Path = CONFIG_PATH):
 
 
 def download_structured(
-    file: File, *dirs: Path, storage_dir: Path | None = None, force: bool = False
+    file: File, *dirs: str, storage_dir: Path | None = None, force: bool = False
 ) -> bool:
     """
     Download a canvasapi File and preserve course structure using directory names
@@ -71,7 +71,7 @@ def download_structured(
         If the file was downloaded
     """
     download_dir = Path(storage_dir or get_config().storage_path).expanduser()
-    path: Path = reduce(lambda p, q: p / q, [download_dir, *dirs])
+    path: Path = reduce(lambda p, q: p / q, [download_dir, *map(Path, dirs)])
     filename: str = file.filename  # pyright: ignore[reportAny]
     file_path: Path = path / filename
     create_dir(path)
@@ -90,7 +90,7 @@ def download_structured(
         return False
 
 
-def provider(config: CansyncConfig) -> Model:
+def provider(config: CansyncConfig) -> Model:  # pyright: ignore[reportReturnType]
     """
     Get the preferred model provider from the config, default is OpenAI because
     lazy people. Implemented config check to prevent ambiguous errors
@@ -107,10 +107,9 @@ def provider(config: CansyncConfig) -> Model:
             return OpenAIChat(id=OPENAI_MODEL, api_key=key)
         else:
             raise ValueError(e.format("OpenAI"))
-    elif config.default_provider == "Ollama":
+    # elif config.default_provider == "Ollama":
+    else:  # noqa: PLR5501
         if (model := config.ollama_model) is not None:
             return Ollama(id=model)
         else:
-            raise ValueError(e.format("ollama"))
-    e = f'Provider "{config.default_provider}" is not a valid provider of models'
-    raise ValueError(e)
+            raise ValueError(e.format("Ollama"))

@@ -81,9 +81,9 @@ def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
     count_lock = Lock()
     download_count = 0
 
-    def safe_download(file: File, *paths: str):
+    def safe_download(file: File, paths: list[str]):
         def inner():
-            res = download_structured(file, *map(Path, paths), force=force)
+            res = download_structured(file, *paths, force=force)
             with count_lock:
                 nonlocal download_count
                 download_count += res
@@ -115,7 +115,7 @@ def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
                             description=f"File: {file.filename}",
                             total=len(items),
                         )
-                        executor.submit(safe_download(file, *paths))
+                        executor.submit(safe_download(file, paths))
                     progress.update(progress_items, advance=1)
                 progress.update(progress_module, advance=1)
                 progress.reset(progress_items)
