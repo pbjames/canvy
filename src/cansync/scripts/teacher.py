@@ -15,7 +15,7 @@ from cansync.const import (
     STOP_WORDS,
 )
 from cansync.types import CansyncConfig
-from cansync.utils import create_dir, get_config, provider
+from cansync.utils import create_dir, provider
 
 logger = logging.getLogger(__name__)
 
@@ -30,59 +30,63 @@ def validate_typst(content: str) -> tuple[bool, bytes]:
         return (False, str(e).encode("utf-8"))
 
 
-def make_problem_sheet(
-    file_name: str, class_name: str, title: str, content: str
-) -> str:
-    """
-    Produce a problem sheet for the user by recycling content from relevant slides
-    and prior knowledge to make engaging yet conformant problems for revision. Focus
-    heavily on what the user is asking for.
+def make_problem_sheet(config: CansyncConfig):
+    def make_problem_sheet(
+        file_name: str, class_name: str, title: str, content: str
+    ) -> str:
+        """
+        Produce a problem sheet for the user by recycling content from relevant slides
+        and prior knowledge to make engaging yet conformant problems for revision. Focus
+        heavily on what the user is asking for.
 
-    Args:
-        file_name: File name ending in .pdf
-        class_name: Name of the current module or class the topic falls under
-        title: Title of the problem sheet
-        content: Body of the problem sheet - use normal markdown with many headings
+        Args:
+            file_name: File name ending in .pdf
+            class_name: Name of the current module or class the topic falls under
+            title: Title of the problem sheet
+            content: Body of the problem sheet - use normal markdown with many headings
 
-    Return:
-        Result
-    """
-    res, body = validate_typst(
-        f"""r
-{PROBLEM_SHEET_1.format(class_name=class_name, student="Mike Hockurts", title=title)}
-{content.replace("#", "=")}
-    """
-    )
-    if not res:
-        return body.decode("utf-8")
-    config = get_config()
-    sheets_dir = config.storage_path / "Problem Sheets"
-    create_dir(sheets_dir)
-    with open(sheets_dir / file_name, "wb") as fp:
-        fp.write(body)
-    logger.info("File written successfully")
-    return "Done"
+        Return:
+            Result
+        """
+        res, body = validate_typst(
+            f"""r
+    {PROBLEM_SHEET_1.format(class_name=class_name, student="Mike Hockurts", title=title)}
+    {content.replace("#", "=")}
+        """
+        )
+        if not res:
+            return body.decode("utf-8")
+        sheets_dir = config.storage_path / "Problem Sheets"
+        create_dir(sheets_dir)
+        with open(sheets_dir / file_name, "wb") as fp:
+            fp.write(body)
+        logger.info("File written successfully")
+        return "Done"
 
-
-def canvas_files() -> str:
-    """
-    Produce the local directory of Canvas files / slides so that we can extract text
-    from the appropriate files
-
-    Returns:
-        Dictionary of {file names -> relative paths}
-    """
-    config = get_config()
-    return str(
-        {
-            fn: Path(dir).relative_to(config.storage_path) / fn
-            for dir, _, fns in os.walk(config.storage_path)
-            for fn in fns
-        }
-    )
+    return make_problem_sheet
 
 
-def retrieve_knowledge(queue: list[Document]):
+def canvas_files(config: CansyncConfig):
+    def canvas_files() -> str:
+        """
+        Produce the local directory of Canvas files / slides so that we can extract text
+        from the appropriate files
+
+        Returns:
+            Dictionary of {file names -> relative paths}
+        """
+        return str(
+            {
+                fn: Path(dir).relative_to(config.storage_path) / fn
+                for dir, _, fns in os.walk(config.storage_path)
+                for fn in fns
+            }
+        )
+
+    return canvas_files
+
+
+def retrieve_knowledge(config: CansyncConfig, queue: list[Document]):
     def retrieve_knowledge(pdf_rel_path: Path):
         """
         Retrieve knowledge which will be processed and added to your knowledge base.
@@ -94,7 +98,6 @@ def retrieve_knowledge(queue: list[Document]):
         Returns:
             Confirmation
         """
-        config = get_config()
         queue.extend(PDFReader().read(config.storage_path / pdf_rel_path))
         return "Done. You will now receive knowledge from god."
 
@@ -131,9 +134,9 @@ def teacher(config: CansyncConfig) -> None:
         ),
         tools=[
             DuckDuckGoTools(),
-            canvas_files,
-            retrieve_knowledge(new_knowledge_queue),
-            make_problem_sheet,
+            canvas_files(config),
+            retrieve_knowledge(config, new_knowledge_queue),
+            make_problem_sheet(config),
         ],
         show_tool_calls=True,
         add_history_to_messages=True,
