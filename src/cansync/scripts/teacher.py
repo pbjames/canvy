@@ -82,7 +82,7 @@ def canvas_files() -> str:
     )
 
 
-def create_retriever(queue: list[Document]):
+def retrieve_knowledge(queue: list[Document]):
     def retrieve_knowledge(pdf_rel_path: Path):
         """
         Retrieve knowledge which will be processed and added to your knowledge base.
@@ -106,9 +106,6 @@ def teacher(config: CansyncConfig) -> None:
     Basically talk to chatgpt but it can discover about everything in the files downloaded
     through the download tool
     """
-    if config.openai_key is None:
-        logger.error("There's no OpenAI key")
-        sys.exit(1)
     from agno.agent.agent import Agent
     from agno.embedder.openai import OpenAIEmbedder
     from agno.knowledge.pdf import PDFKnowledgeBase
@@ -135,7 +132,7 @@ def teacher(config: CansyncConfig) -> None:
         tools=[
             DuckDuckGoTools(),
             canvas_files,
-            create_retriever(new_knowledge_queue),
+            retrieve_knowledge(new_knowledge_queue),
             make_problem_sheet,
         ],
         show_tool_calls=True,

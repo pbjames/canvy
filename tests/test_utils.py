@@ -75,8 +75,6 @@ default_provider = "Ollama"
     equivalent = CansyncConfig(
         canvas_key=CANVAS_TEST_KEY,
         canvas_url=CANVAS_TEST_URL,
-        openai_key="",
-        ollama_model="",
         storage_path=doc_path,
         default_provider=ModelProvider.OLLAMA,
     )
@@ -99,8 +97,6 @@ default_provider = "Ollama"
     config = CansyncConfig(
         canvas_key=CANVAS_TEST_KEY,
         canvas_url=CANVAS_TEST_URL,
-        openai_key="",
-        ollama_model="",
         storage_path=doc_path,
         default_provider=ModelProvider.OLLAMA,
     )
@@ -195,8 +191,6 @@ def test_provider(tmp_path: Path, def_provider: str, key: str):
     args = {
         "canvas_key": CANVAS_TEST_KEY,
         "canvas_url": CANVAS_TEST_URL,
-        "openai_key": "",
-        "ollama_model": "",
         "storage_path": tmp_path,
         "default_provider": def_provider,
     }

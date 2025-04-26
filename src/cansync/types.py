@@ -27,8 +27,8 @@ class ModelProvider(StrEnum):
 class CansyncConfig(BaseModel):
     canvas_key: str = Field(description=API_KEY_DESC, pattern=API_KEY_REGEX)
     canvas_url: str = Field(description=EDU_URL_DESC, pattern=URL_REGEX)
-    openai_key: str | None = Field(description=OPENAI_KEY_DESC)
-    ollama_model: str | None = Field(description=OLLAMA_MODEL_DESC)
+    openai_key: str = Field(default="", description=OPENAI_KEY_DESC)
+    ollama_model: str = Field(default="", description=OLLAMA_MODEL_DESC)
     storage_path: Path = Field(description=STORAGE_PATH_DESC)
     default_provider: ModelProvider = Field(
         ModelProvider.OPENAI, description=DEFAULT_PROVIDER_DESC
@@ -59,17 +59,6 @@ class CansyncConfig(BaseModel):
         Do this or else it uses __repr__ for some reason
         """
         return str(value)
-
-    @field_serializer("openai_key")
-    def serialize_openai_key(self, value: str | None) -> str:
-        """
-        Deletes field if value is None - causes incorrect config file load
-        """
-        return value or ""
-
-    @field_serializer("ollama_model")
-    def serialize_ollama(self, value: str | None) -> str:
-        return value or ""
 
     @field_serializer("default_provider")
     def serialize_provider(self, value: ModelProvider) -> str:

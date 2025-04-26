@@ -47,8 +47,8 @@ def requires_config() -> CansyncConfig:
             canvas_url=add_https(input("Canvas URL: ")),
             canvas_key=getpass("Canvas API Key: "),
             storage_path=Path(input("Store path (optional): ") or DEFAULT_DOWNLOAD_DIR),
-            openai_key=getpass("Open AI Key (optional): ") or None,
-            ollama_model=input("Ollama model (optional): ") or None,
+            openai_key=getpass("Open AI Key (optional): "),
+            ollama_model=input("Ollama model (optional): "),
             default_provider=ModelProvider.OPENAI,
         )
         set_config(config)
@@ -155,7 +155,7 @@ def edit_config():
                 default=current.openai_key,
                 password=True,
             )
-            or None,
+            or "",
             ollama_model=Prompt.ask("Ollama model: ", default=current.ollama_model),
             default_provider=ModelProvider(
                 Prompt.ask("Default provider: ", choices=list(ModelProvider))
@@ -196,8 +196,8 @@ def set_config(  # noqa: PLR0913
             canvas_url=add_https(canvas_url or input("Canvas URL -> https://")),
             canvas_key=canvas_key or getpass("Canvas API Key: "),
             storage_path=storage_path or DEFAULT_DOWNLOAD_DIR,
-            openai_key=openai_key,
-            ollama_model=ollama_model,
+            openai_key=openai_key or "",
+            ollama_model=ollama_model or "",
             default_provider=default_provider or ModelProvider.OPENAI,
         )
         set_config(config)

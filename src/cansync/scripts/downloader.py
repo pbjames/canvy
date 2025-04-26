@@ -6,7 +6,6 @@ import logging
 import re
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
 
 from canvasapi.canvas import Canvas
 from canvasapi.course import Course
