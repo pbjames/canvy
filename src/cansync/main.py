@@ -7,7 +7,7 @@ from canvasapi.canvas import Canvas, Course
 from canvasapi.requester import ResourceDoesNotExist
 from pydantic import ValidationError
 from rich import print as pprint
-from rich.prompt import Prompt
+from rich.prompt import Confirm, Prompt
 from typer import Typer
 
 from cansync.const import (
@@ -33,20 +33,14 @@ def add_https(url: str):
     return f"https://{url}"
 
 
-def requires_config() -> tuple[Canvas, CansyncConfig]:
+def requires_config() -> CansyncConfig:
     try:
         config = get_config()
-        canvas = Canvas(config.canvas_url, config.canvas_key)
-        return canvas, config
+        return config
     except FileNotFoundError:
         from cansync.utils import set_config
 
-        choice = (
-            Prompt.ask(
-                "Config file doesn't exist, create one?", choices=["Y", "n"]
-            ).lower()
-            != "n"
-        )
+        choice = Confirm.ask("Config file doesn't exist, create one?")
         if not choice:
             sys.exit(1)
         config = CansyncConfig(
@@ -65,19 +59,23 @@ def requires_config() -> tuple[Canvas, CansyncConfig]:
         pprint("\n[bold red]Closing[/bold red]..")
     except Exception as e:
         pprint(f"Either the config is messed up or the internet is: {e}")
-        user_choice = (
-            Prompt.ask("Destroy config file?", choices=["n", "Y"]).lower() == "y"
-        )
+        user_choice = Confirm.ask("Destroy config file?")
         if user_choice:
             delete_config()
     sys.exit(1)
+
+
+def requires_canvas() -> tuple[Canvas, CansyncConfig]:
+    config = requires_config()
+    canvas = Canvas(config.canvas_url, config.canvas_key)
+    return canvas, config
 
 
 @cli.command(short_help="Download files from Canvas")
 def download(*, force: bool = False):
     from cansync.scripts import download
 
-    canvas, config = requires_config()
+    canvas, config = requires_canvas()
     try:
         count = download(canvas, config.canvas_url, force=force)
         pprint(f"[bold]{count}[/bold] new files! :speaking_head: :fire:")
@@ -93,7 +91,7 @@ def download(*, force: bool = False):
 def teacher():
     from cansync.scripts import teacher
 
-    _, config = requires_config()
+    config = requires_config()
     try:
         teacher(config)
     except (KeyboardInterrupt, EOFError):
@@ -103,7 +101,7 @@ def teacher():
 
 @cli.command(short_help="List available courses")
 def courses(*, detailed: bool = False):
-    canvas, _ = requires_config()
+    canvas, _ = requires_canvas()
     try:
         courses: list[Course] = list(canvas.get_courses(enrollment_state="active"))
         if detailed:
@@ -133,11 +131,46 @@ def courses(*, detailed: bool = False):
         pprint(f"Unknown error: {e}")
 
 
+# TODO: Test ts
+@cli.command(short_help="Edit config")
+def edit_config():
+    from cansync.utils import set_config
+
+    current = requires_config()
+    try:
+        new = CansyncConfig(
+            canvas_url=add_https(
+                Prompt.ask("Canvas URL: ", default=current.canvas_url)
+            ),
+            canvas_key=Prompt.ask(
+                "Canvas API Key: ",
+                show_default=False,
+                default=current.canvas_key,
+                password=True,
+            ),
+            storage_path=Path(Prompt.ask("Store path: ", default=current.storage_path)),
+            openai_key=Prompt.ask(
+                "Open AI Key: ",
+                show_default=False,
+                default=current.openai_key,
+                password=True,
+            )
+            or None,
+            ollama_model=Prompt.ask("Ollama model: ", default=current.ollama_model),
+            default_provider=ModelProvider(
+                Prompt.ask("Default provider: ", choices=list(ModelProvider))
+            ),
+        )
+        set_config(new)
+    except Exception as e:
+        pprint(f"[bold red]Bad config[\bold  red]: {e}")
+
+
 # @cli.command(short_help="Get grades for each course and assignment")
 # def grades(*, course_only: bool = False):
 #     from cansync.scripts import grades
 #
-#     canvas, _ = requires_config()
+#     canvas, _ = requires_canvas()
 #     try:
 #         stuff = grades_by_course(canvas) if course_only else grades(canvas)
 #         pprint(stuff)
