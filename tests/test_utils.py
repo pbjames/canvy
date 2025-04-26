@@ -22,14 +22,16 @@ from cansync.utils import (
 from tests.conftest import (
     CANVAS_TEST_KEY,
     CANVAS_TEST_URL,
+    PROVIDER_TEST_KEYS,
     PROVIDER_TEST_MAPPING,
     PROVIDER_TEST_MODELS,
-    PROVIDER_TEST_VALUES,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def test_setup_logging(monkeypatch: pytest.MonkeyPatch):
-    def mock_dictconfig(conf):
+    def mock_dictconfig[T](conf: T) -> T:
         return conf
 
     monkeypatch.setattr(logging.config, "dictConfig", mock_dictconfig)
@@ -176,31 +178,35 @@ def test_download_structured_shouldve_force(
 
 
 @pytest.mark.parametrize(
-    "p,value",
-    next(
-        iter(
-            chain(
-                [(provider, ""), (provider, PROVIDER_TEST_VALUES[provider.value])]
-                for provider in ModelProvider
-            )
-        )
+    "def_provider,key",
+    chain(
+        *[
+            [
+                (provider.value, ""),
+                (provider.value, PROVIDER_TEST_KEYS[provider.value]),
+            ]
+            for provider in [ModelProvider.OPENAI, ModelProvider.OLLAMA]
+        ]
     ),
 )
-def test_provider(tmp_path: Path, p: ModelProvider, value: str):
+def test_provider(tmp_path: Path, def_provider: str, key: str):
+    setup_logging()
+    logger.info(f"{def_provider}: {key}")
     args = {
         "canvas_key": CANVAS_TEST_KEY,
         "canvas_url": CANVAS_TEST_URL,
         "openai_key": "",
         "ollama_model": "",
         "storage_path": tmp_path,
-        "default_provider": p.value,
+        "default_provider": def_provider,
     }
-    args.update({PROVIDER_TEST_MAPPING[p.value]: value})
-    if not value:
+    args.update({PROVIDER_TEST_MAPPING[def_provider]: key})
+    if not key:
         with pytest.raises(ValueError) as excinfo:
-            provider(CansyncConfig(**args))
-        assert p.value in str(excinfo.value)
+            provider(CansyncConfig(**args))  # pyright: ignore[reportArgumentType]
+        assert def_provider in str(excinfo.value)
     else:
         assert isinstance(
-            provider(CansyncConfig(**args)), PROVIDER_TEST_MODELS[p.value]
+            provider(CansyncConfig(**args)),  # pyright: ignore[reportArgumentType]
+            PROVIDER_TEST_MODELS[def_provider],
         )

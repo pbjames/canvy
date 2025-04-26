@@ -103,13 +103,13 @@ def provider(config: CansyncConfig) -> Model:
     """
     e = "Model set to {} but the key isn't in the config"
     if config.default_provider == "OpenAI":
-        if (key := config.openai_key) is not None:
+        if key := config.openai_key:
             return OpenAIChat(id=OPENAI_MODEL, api_key=key)
         else:
             raise ValueError(e.format("OpenAI"))
     # elif config.default_provider == "Ollama":
     else:  # noqa: PLR5501
-        if (model := config.ollama_model) is not None:
+        if model := config.ollama_model:
             return Ollama(id=model)
         else:
             raise ValueError(e.format("Ollama"))
