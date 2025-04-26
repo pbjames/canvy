@@ -90,7 +90,7 @@ def download_structured(
         return False
 
 
-def provider(config: CansyncConfig) -> Model:  # pyright: ignore[reportReturnType]
+def provider(config: CansyncConfig) -> Model:
     """
     Get the preferred model provider from the config, default is OpenAI because
     lazy people. Implemented config check to prevent ambiguous errors

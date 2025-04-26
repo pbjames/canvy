@@ -14,7 +14,6 @@ from cansync.const import (
     CONFIG_PATH,
     DEFAULT_DOWNLOAD_DIR,
 )
-from cansync.scripts.grades import grades_by_course
 from cansync.types import CansyncConfig, ModelProvider
 from cansync.utils import (
     better_course_name,
@@ -76,7 +75,7 @@ def requires_config() -> tuple[Canvas, CansyncConfig]:
 
 @cli.command(short_help="Download files from Canvas")
 def download(*, force: bool = False):
-    from cansync.scripts.downloader import download
+    from cansync.scripts import download
 
     canvas, config = requires_config()
     try:
@@ -92,7 +91,7 @@ def download(*, force: bool = False):
 
 @cli.command(short_help="Use an assistant to go through the files")
 def teacher():
-    from cansync.scripts.teacher import teacher
+    from cansync.scripts import teacher
 
     _, config = requires_config()
     try:
@@ -134,18 +133,18 @@ def courses(*, detailed: bool = False):
         pprint(f"Unknown error: {e}")
 
 
-@cli.command(short_help="Get grades for each course and assignment")
-def grades(*, course_only: bool = False):
-    from cansync.scripts.grades import grades
-
-    canvas, _ = requires_config()
-    try:
-        stuff = grades_by_course(canvas) if course_only else grades(canvas)
-        pprint(stuff)
-    except ResourceDoesNotExist as e:
-        pprint(f"We probably don't have access to this course: {e}")
-    except Exception as e:
-        pprint(f"Unknown error: {e}")
+# @cli.command(short_help="Get grades for each course and assignment")
+# def grades(*, course_only: bool = False):
+#     from cansync.scripts import grades
+#
+#     canvas, _ = requires_config()
+#     try:
+#         stuff = grades_by_course(canvas) if course_only else grades(canvas)
+#         pprint(stuff)
+#     except ResourceDoesNotExist as e:
+#         pprint(f"We probably don't have access to this course: {e}")
+#     except Exception as e:
+#         pprint(f"Unknown error: {e}")
 
 
 @cli.command(short_help="Set up config to use the rest of the tool")
