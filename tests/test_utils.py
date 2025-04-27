@@ -25,6 +25,7 @@ from tests.conftest import (
     PROVIDER_TEST_KEYS,
     PROVIDER_TEST_MAPPING,
     PROVIDER_TEST_MODELS,
+    vanilla_config,
 )
 
 logger = logging.getLogger(__name__)
@@ -69,15 +70,10 @@ canvas_url = "{CANVAS_TEST_URL}"
 openai_key = ""
 ollama_model = ""
 storage_path = "{doc_path}"
-default_provider = "Ollama"
+default_provider = "OpenAI"
 """
         )
-    equivalent = CansyncConfig(
-        canvas_key=CANVAS_TEST_KEY,
-        canvas_url=CANVAS_TEST_URL,
-        storage_path=doc_path,
-        default_provider=ModelProvider.OLLAMA,
-    )
+    equivalent = vanilla_config(doc_path)
     assert get_config(new_path) == equivalent
 
 

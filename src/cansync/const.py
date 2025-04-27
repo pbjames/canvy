@@ -62,6 +62,7 @@ DEFAULT_PROVIDER_DESC: Final[str] = "Default model provider, e.g. Ollama, OpenAI
 LOG_FN: Final[Path] = user_log_path(APP_NAME) / "cansync.log"
 CONFIG_PATH: Final[Path] = user_config_path(APP_NAME) / "config.toml"
 DEFAULT_DOWNLOAD_DIR: Final[Path] = user_documents_path() / APP_NAME
+PS_DIRNAME: Final[str] = "Problem Sheets"
 
 LOGGING_CONFIG = {
     "version": 1,

@@ -12,6 +12,7 @@ from cansync.const import (
     AGENT_INSTRUCTIONS,
     OPENAI_EMBEDDINGS,
     PROBLEM_SHEET_1,
+    PS_DIRNAME,
     STOP_WORDS,
 )
 from cansync.types import CansyncConfig
@@ -56,7 +57,7 @@ def make_problem_sheet(config: CansyncConfig):
         )
         if not res:
             return body.decode("utf-8")
-        sheets_dir = config.storage_path / "Problem Sheets"
+        sheets_dir = config.storage_path / PS_DIRNAME
         create_dir(sheets_dir)
         with open(sheets_dir / file_name, "wb") as fp:
             fp.write(body)

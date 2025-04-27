@@ -1,5 +1,7 @@
+from pathlib import Path
 from agno.models.ollama import Ollama
 from agno.models.openai.chat import OpenAIChat
+from cansync.types import CansyncConfig, ModelProvider
 
 CANVAS_TEST_KEY = (
     "1000~aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -20,3 +22,20 @@ PROVIDER_TEST_MODELS = {
     "OpenAI": OpenAIChat,
     "Ollama": Ollama,
 }
+
+
+def vanilla_config(path: Path) -> CansyncConfig:
+    """
+    CansyncConfig(
+        canvas_key=CANVAS_TEST_KEY,
+        canvas_url=CANVAS_TEST_URL,
+        storage_path=path,
+        default_provider=ModelProvider.OPENAI,
+    )
+    """
+    return CansyncConfig(
+        canvas_key=CANVAS_TEST_KEY,
+        canvas_url=CANVAS_TEST_URL,
+        storage_path=path,
+        default_provider=ModelProvider.OPENAI,
+    )
