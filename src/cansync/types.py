@@ -62,6 +62,9 @@ class CansyncConfig(BaseModel):
 
     @field_serializer("default_provider")
     def serialize_provider(self, value: ModelProvider) -> str:
+        """
+        Do this or else it turns into array for some reason
+        """
         return str(value)
 
 
