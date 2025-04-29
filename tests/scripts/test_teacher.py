@@ -3,6 +3,7 @@ from pathlib import Path
 from agno.document import Document
 
 from cansync.const import PS_DIRNAME
+from cansync.scripts import teacher
 from cansync.scripts.teacher import (
     canvas_files,
     make_problem_sheet,
@@ -81,4 +82,6 @@ def test_retrieve_knowledge(tmp_path: Path):
 
 
 # TODO: Finish this
-def test_teacher(): ...
+def test_teacher(tmp_path: Path):
+    config = vanilla_config(tmp_path)
+    teacher(config)
