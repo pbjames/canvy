@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from agno.document import Document
 
 from cansync.const import PS_DIRNAME
@@ -82,6 +83,7 @@ def test_retrieve_knowledge(tmp_path: Path):
 
 
 # TODO: Finish this
+@pytest.mark.skip(reason="unfinished")
 def test_teacher(tmp_path: Path):
     config = vanilla_config(tmp_path)
     teacher(config)

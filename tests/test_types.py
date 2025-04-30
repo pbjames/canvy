@@ -6,12 +6,15 @@ from cansync.types import CansyncConfig, ModelProvider
 from tests.conftest import vanilla_config
 
 
-# TODO: FINISH
 def test_verify_accessible_path(tmp_path: Path):
     with pytest.raises(ValueError):
         CansyncConfig.verify_accessible_path(Path("/"))
     with pytest.raises(PermissionError):
         CansyncConfig.verify_accessible_path(Path("/home/sigmaboy123"))
+    with pytest.raises(FileExistsError):
+        file_path = tmp_path / "touched"
+        file_path.touch()
+        CansyncConfig.verify_accessible_path(file_path)
     assert CansyncConfig.verify_accessible_path(tmp_path) == tmp_path
 
 
