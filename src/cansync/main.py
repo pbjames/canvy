@@ -207,6 +207,13 @@ def set_config(  # noqa: PLR0913
         pprint("\n[bold red]Closing[/bold red]..")
 
 
+@cli.callback(invoke_without_command=True)
+def tui():
+    from cansync.tui import run
+
+    run()
+
+
 def main():
     create_dir(CONFIG_PATH.parent)
     setup_logging()
