@@ -123,7 +123,6 @@ class StopwatchApp(App[None]):
     """
 
     BINDINGS: ClassVar[list[BindingType]] = [
-        ("d", "toggle_dark", "Toggle dark mode"),
         ("a", "add_stopwatch", "Add"),
         ("r", "remove_stopwatch", "Remove"),
     ]
@@ -133,11 +132,6 @@ class StopwatchApp(App[None]):
         yield Header()
         yield Footer()
         yield VerticalScroll(Stopwatch(), Stopwatch(), Stopwatch(), id="timers")
-
-    @override
-    def action_toggle_dark(self):
-        is_light = self.theme == "textual-light"
-        self.theme = "textual-dark" if is_light else "textual-light"
 
     def action_add_stopwatch(self) -> None:
         new_stopwatch = Stopwatch()

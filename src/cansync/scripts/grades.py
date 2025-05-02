@@ -8,7 +8,7 @@ from canvasapi.grade_change_log import GradeChangeEvent
 logger = logging.getLogger(__name__)
 
 
-# TODO: Decide whether canvas will ever give us permissions for grades
+# INFO: Postpone but not delete code because idk why I can't access these marks
 
 
 def grades_by_course(canvas: Canvas) -> dict[str, float | None]:
