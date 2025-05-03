@@ -5,7 +5,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field, field_serializer, field_validator
 
-from cansync.const import (
+from canvy.const import (
     API_KEY_DESC,
     API_KEY_REGEX,
     DEFAULT_PROVIDER_DESC,
@@ -24,7 +24,7 @@ class ModelProvider(StrEnum):
     OPENAI = "OpenAI"
 
 
-class CansyncConfig(BaseModel):
+class CanvyConfig(BaseModel):
     canvas_key: str = Field(description=API_KEY_DESC, pattern=API_KEY_REGEX)
     canvas_url: str = Field(description=EDU_URL_DESC, pattern=URL_REGEX)
     openai_key: str = Field(default="", description=OPENAI_KEY_DESC)

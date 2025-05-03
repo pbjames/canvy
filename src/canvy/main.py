@@ -10,12 +10,12 @@ from rich import print as pprint
 from rich.prompt import Confirm, Prompt
 from typer import Typer
 
-from cansync.const import (
+from canvy.const import (
     CONFIG_PATH,
     DEFAULT_DOWNLOAD_DIR,
 )
-from cansync.types import CansyncConfig, ModelProvider
-from cansync.utils import (
+from canvy.types import CanvyConfig, ModelProvider
+from canvy.utils import (
     better_course_name,
     create_dir,
     delete_config,
@@ -33,17 +33,17 @@ def add_https(url: str):
     return f"https://{url}"
 
 
-def requires_config() -> CansyncConfig:
+def requires_config() -> CanvyConfig:
     try:
         config = get_config()
         return config
     except FileNotFoundError:
-        from cansync.utils import set_config
+        from canvy.utils import set_config
 
         choice = Confirm.ask("Config file doesn't exist, create one?")
         if not choice:
             sys.exit(1)
-        config = CansyncConfig(
+        config = CanvyConfig(
             canvas_url=add_https(input("Canvas URL: ")),
             canvas_key=getpass("Canvas API Key: "),
             storage_path=Path(input("Store path (optional): ") or DEFAULT_DOWNLOAD_DIR),
@@ -65,7 +65,7 @@ def requires_config() -> CansyncConfig:
     sys.exit(1)
 
 
-def requires_canvas() -> tuple[Canvas, CansyncConfig]:
+def requires_canvas() -> tuple[Canvas, CanvyConfig]:
     config = requires_config()
     canvas = Canvas(config.canvas_url, config.canvas_key)
     return canvas, config
@@ -73,7 +73,7 @@ def requires_canvas() -> tuple[Canvas, CansyncConfig]:
 
 @cli.command(short_help="Download files from Canvas")
 def download(*, force: bool = False):
-    from cansync.scripts import download
+    from canvy.scripts import download
 
     canvas, config = requires_canvas()
     try:
@@ -89,7 +89,7 @@ def download(*, force: bool = False):
 
 @cli.command(short_help="Use an assistant to go through the files")
 def teacher():
-    from cansync.scripts import teacher
+    from canvy.scripts import teacher
 
     config = requires_config()
     try:
@@ -134,11 +134,11 @@ def courses(*, detailed: bool = False):
 # TODO: Test ts
 @cli.command(short_help="Edit config")
 def edit_config():
-    from cansync.utils import set_config
+    from canvy.utils import set_config
 
     current = requires_config()
     try:
-        new = CansyncConfig(
+        new = CanvyConfig(
             canvas_url=add_https(
                 Prompt.ask("Canvas URL: ", default=current.canvas_url)
             ),
@@ -168,7 +168,7 @@ def edit_config():
 
 # @cli.command(short_help="Get grades for each course and assignment")
 # def grades(*, course_only: bool = False):
-#     from cansync.scripts import grades
+#     from canvy.scripts import grades
 #
 #     canvas, _ = requires_canvas()
 #     try:
@@ -189,10 +189,10 @@ def set_config(  # noqa: PLR0913
     ollama_model: str | None = None,
     default_provider: ModelProvider | None = None,
 ):
-    from cansync.utils import set_config
+    from canvy.utils import set_config
 
     try:
-        config = CansyncConfig(
+        config = CanvyConfig(
             canvas_url=add_https(canvas_url or input("Canvas URL -> https://")),
             canvas_key=canvas_key or getpass("Canvas API Key: "),
             storage_path=storage_path or DEFAULT_DOWNLOAD_DIR,
@@ -209,7 +209,7 @@ def set_config(  # noqa: PLR0913
 
 @cli.callback(invoke_without_command=True)
 def tui():
-    from cansync.tui import run
+    from canvy.tui import run
 
     run()
 

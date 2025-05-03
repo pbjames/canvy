@@ -7,9 +7,9 @@ import pytest
 from canvasapi.file import File
 from canvasapi.requester import ResourceDoesNotExist
 
-from cansync.const import LOGGING_CONFIG
-from cansync.types import CansyncConfig, ModelProvider
-from cansync.utils import (
+from canvy.const import LOGGING_CONFIG
+from canvy.types import canvyConfig, ModelProvider
+from canvy.utils import (
     better_course_name,
     create_dir,
     delete_config,
@@ -90,7 +90,7 @@ ollama_model = ""
 storage_path = "{doc_path}"
 default_provider = "Ollama"
 """
-    config = CansyncConfig(
+    config = canvyConfig(
         canvas_key=CANVAS_TEST_KEY,
         canvas_url=CANVAS_TEST_URL,
         storage_path=doc_path,
@@ -193,10 +193,10 @@ def test_provider(tmp_path: Path, def_provider: str, key: str):
     args.update({PROVIDER_TEST_MAPPING[def_provider]: key})
     if not key:
         with pytest.raises(ValueError) as excinfo:
-            provider(CansyncConfig(**args))  # pyright: ignore[reportArgumentType]
+            provider(canvyConfig(**args))  # pyright: ignore[reportArgumentType]
         assert def_provider in str(excinfo.value)
     else:
         assert isinstance(
-            provider(CansyncConfig(**args)),  # pyright: ignore[reportArgumentType]
+            provider(canvyConfig(**args)),  # pyright: ignore[reportArgumentType]
             PROVIDER_TEST_MODELS[def_provider],
         )

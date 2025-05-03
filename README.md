@@ -1,7 +1,7 @@
-# Cansync
+# Canvy
 
 <!--toc:start-->
-- [Cansync](#cansync)
+- [Canvy](#canvy)
   - [Features](#features)
   - [Usage](#usage)
   - [Installation](#installation)
@@ -19,17 +19,17 @@ All-in-one manager for _educational resources_ hosted on **Canvas**.
 ## Usage
 
 ```sh
-$ cansync download
+$ canvy download
 Downloading all files...
 Finished in 5.0s.
-$ cansync courses
+$ canvy courses
 (10848) Data Structures & Algorithms
 (91842) Software Engineering
 (59283) Functional Programming
-$ cansync download 10848
+$ canvy download 10848
 Downloading all files from Data Structures & Algorithms
 Finished in 2.0s.
-$ cansync teacher
+$ canvy teacher
 >>> read the mle file and tell me about the urn example
 INFO Reading: W2
 ┏━ Message          ━┓
@@ -63,12 +63,12 @@ INFO Loaded 24 documents to knowledge base
 ## Installation
 
 Arch (not yet):
-`` yay -S python-cansync ``
+``yay -S python-canvy``
 
 Basically anything else:
 
 1. Install [uv](https://github.com/astral-sh/uv)
-2. `` uv tool install cansync ``
+2. ``uv tool install canvy``
 
 ## Contribution
 

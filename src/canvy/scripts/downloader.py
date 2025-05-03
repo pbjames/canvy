@@ -14,8 +14,8 @@ from canvasapi.file import File
 from canvasapi.module import Module, ModuleItem
 from canvasapi.page import Page
 
-from cansync.types import ModuleItemType
-from cansync.utils import (
+from canvy.types import ModuleItemType
+from canvy.utils import (
     better_course_name,
     download_structured,
 )

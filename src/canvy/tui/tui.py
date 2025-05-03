@@ -10,7 +10,7 @@ from textual.widgets import Button, Digits, Footer, Header
 logger = logging.getLogger(__name__)
 
 
-class Cansync(App[None]):
+class Canvy(App[None]):
     BINDINGS: ClassVar[list[BindingType]] = []
 
     @override
@@ -21,5 +21,5 @@ class Cansync(App[None]):
 
 
 def run():
-    app = Cansync()
+    app = Canvy()
     app.run()

@@ -10,8 +10,8 @@ from agno.models.ollama import Ollama
 from agno.models.openai.chat import OpenAIChat
 from canvasapi.file import File
 
-from cansync.const import CONFIG_PATH, LOG_FN, LOGGING_CONFIG, OPENAI_MODEL
-from cansync.types import CansyncConfig
+from canvy.const import CONFIG_PATH, LOG_FN, LOGGING_CONFIG, OPENAI_MODEL
+from canvy.types import CanvyConfig
 
 logger = logging.getLogger(__name__)
 
@@ -37,15 +37,15 @@ def create_dir(directory: Path) -> None:
     os.makedirs(directory, exist_ok=True)
 
 
-def get_config(path: Path | None = None) -> CansyncConfig:
+def get_config(path: Path | None = None) -> CanvyConfig:
     path = path or CONFIG_PATH
     with open(path) as fp:
         logger.debug(f"Retrieving config from {path}")
-        config = CansyncConfig(**toml.load(fp))  # pyright: ignore[reportAny]
+        config = CanvyConfig(**toml.load(fp))  # pyright: ignore[reportAny]
     return config
 
 
-def set_config(config: CansyncConfig, dest: Path = CONFIG_PATH) -> None:
+def set_config(config: CanvyConfig, dest: Path = CONFIG_PATH) -> None:
     dest = dest if dest else CONFIG_PATH
     with open(dest, "w") as fp:
         logger.debug("Writing config")
@@ -90,7 +90,7 @@ def download_structured(
         return False
 
 
-def provider(config: CansyncConfig) -> Model:
+def provider(config: CanvyConfig) -> Model:
     """
     Get the preferred model provider from the config, default is OpenAI because
     lazy people. Implemented config check to prevent ambiguous errors

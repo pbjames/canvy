@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 from agno.document import Document
 
-from cansync.const import PS_DIRNAME
-from cansync.scripts import teacher
-from cansync.scripts.teacher import (
+from canvy.const import PS_DIRNAME
+from canvy.scripts import teacher
+from canvy.scripts.teacher import (
     canvas_files,
     make_problem_sheet,
     retrieve_knowledge,
@@ -52,7 +52,7 @@ def test_make_problem_sheet_fail(tmp_path: Path):
 
 def test_canvas_files(tmp_path: Path):
     config = vanilla_config(tmp_path)
-    base = tmp_path / "cansync"
+    base = tmp_path / "canvy"
     base.mkdir()
     path_file1 = base / "test1.pdf"
     path_file1.touch()
@@ -71,7 +71,7 @@ def test_retrieve_knowledge(tmp_path: Path):
     config = vanilla_config(tmp_path)
     queue: list[Document] = []
     retriever = retrieve_knowledge(config, queue)
-    base = tmp_path / "cansync"
+    base = tmp_path / "canvy"
     base.mkdir()
     path_file1 = base / "test1.pdf"
     path_file1.write_bytes(

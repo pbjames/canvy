@@ -7,7 +7,7 @@ import typst
 from agno.document.base import Document
 from agno.document.reader.pdf_reader import PDFReader
 
-from cansync.const import (
+from canvy.const import (
     AGENT_DESCRIPTION,
     AGENT_INSTRUCTIONS,
     OPENAI_EMBEDDINGS,
@@ -15,8 +15,8 @@ from cansync.const import (
     PS_DIRNAME,
     STOP_WORDS,
 )
-from cansync.types import CansyncConfig
-from cansync.utils import create_dir, provider
+from canvy.types import CanvyConfig
+from canvy.utils import create_dir, provider
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def validate_typst(content: str) -> tuple[bool, bytes]:
         return (False, str(e).encode("utf-8"))
 
 
-def make_problem_sheet(config: CansyncConfig):
+def make_problem_sheet(config: CanvyConfig):
     def make_problem_sheet(
         file_name: str, class_name: str, title: str, content: str
     ) -> str:
@@ -67,7 +67,7 @@ def make_problem_sheet(config: CansyncConfig):
     return make_problem_sheet
 
 
-def canvas_files(config: CansyncConfig):
+def canvas_files(config: CanvyConfig):
     def canvas_files() -> str:
         """
         Produce the local directory of Canvas files / slides so that we can extract text
@@ -87,7 +87,7 @@ def canvas_files(config: CansyncConfig):
     return canvas_files
 
 
-def retrieve_knowledge(config: CansyncConfig, queue: list[Document]):
+def retrieve_knowledge(config: CanvyConfig, queue: list[Document]):
     def retrieve_knowledge(pdf_rel_path: Path):
         """
         Retrieve knowledge which will be processed and added to your knowledge base.
@@ -105,7 +105,7 @@ def retrieve_knowledge(config: CansyncConfig, queue: list[Document]):
     return retrieve_knowledge
 
 
-def teacher(config: CansyncConfig) -> None:
+def teacher(config: CanvyConfig) -> None:
     """
     Basically talk to chatgpt but it can discover about everything in the files downloaded
     through the download tool

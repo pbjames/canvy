@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "cansync"
+name = "canvy"
 dynamic = ["version"]
 description = "Sync files from Canvas courses"
 readme = "README.md"
@@ -32,13 +32,13 @@ dependencies = [
 ]
 
 [project.scripts]
-cansync = "cansync.main:main"
+canvy = "canvy.main:main"
 
 [tool.hatch.version]
-path = "src/cansync/__init__.py"
+path = "src/canvy/__init__.py"
 
 [tool.hatch.build.targets.sdist]
-packages = ["src/cansync"]
+packages = ["src/canvy"]
 
 [tool.mypy]
 disallow_untyped_defs = false
