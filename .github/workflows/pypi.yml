@@ -1,0 +1,37 @@
+name: Deploy to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  deploy:
+    environment: pypi
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install build dependencies
+        run: |
+          uv sync
+
+      - name: Build the package
+        run: |
+          uv build
+
+      - name: Deploy package
+        run: |
+          uv publish
