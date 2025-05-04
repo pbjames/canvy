@@ -1,3 +1,4 @@
+import getpass
 import logging.config
 import os
 from itertools import chain
@@ -8,7 +9,7 @@ from canvasapi.file import File
 from canvasapi.requester import ResourceDoesNotExist
 
 from canvy.const import LOGGING_CONFIG
-from canvy.types import canvyConfig, ModelProvider
+from canvy.types import CanvyConfig, ModelProvider
 from canvy.utils import (
     better_course_name,
     create_dir,
@@ -55,7 +56,11 @@ def test_better_course_name(name: str, expected: str):
 def test_create_dir(tmp_path: Path):
     new_path = tmp_path / "1c03177a-e4f6-4ae3-9c36-25b1e0880002"
     create_dir(new_path)
-    assert new_path.exists() and new_path.owner() == os.getlogin() and new_path.is_dir()
+    assert (
+        new_path.exists()
+        and new_path.owner() == getpass.getuser()
+        and new_path.is_dir()
+    )
 
 
 def test_get_config(tmp_path: Path):
@@ -90,7 +95,7 @@ ollama_model = ""
 storage_path = "{doc_path}"
 default_provider = "Ollama"
 """
-    config = canvyConfig(
+    config = CanvyConfig(
         canvas_key=CANVAS_TEST_KEY,
         canvas_url=CANVAS_TEST_URL,
         storage_path=doc_path,
@@ -193,10 +198,10 @@ def test_provider(tmp_path: Path, def_provider: str, key: str):
     args.update({PROVIDER_TEST_MAPPING[def_provider]: key})
     if not key:
         with pytest.raises(ValueError) as excinfo:
-            provider(canvyConfig(**args))  # pyright: ignore[reportArgumentType]
+            provider(CanvyConfig(**args))  # pyright: ignore[reportArgumentType]
         assert def_provider in str(excinfo.value)
     else:
         assert isinstance(
-            provider(canvyConfig(**args)),  # pyright: ignore[reportArgumentType]
+            provider(CanvyConfig(**args)),  # pyright: ignore[reportArgumentType]
             PROVIDER_TEST_MODELS[def_provider],
         )

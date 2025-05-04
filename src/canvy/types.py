@@ -1,5 +1,5 @@
+import getpass
 import logging
-import os
 from enum import StrEnum
 from pathlib import Path
 
@@ -40,7 +40,7 @@ class CanvyConfig(BaseModel):
         """
         Test if the user can access a given path to prevent compounding files access errors
         """
-        if value.exists() and value.owner() != os.getlogin():
+        if value.exists() and value.owner() != getpass.getuser():
             e = f"Path {value} exists but we don't have permission to access it"
             raise ValueError(e)
         try:
