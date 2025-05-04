@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging.config
 import os
 import re
@@ -5,9 +7,6 @@ from functools import reduce
 from pathlib import Path
 
 import toml
-from agno.models.base import Model
-from agno.models.ollama import Ollama
-from agno.models.openai.chat import OpenAIChat
 from canvasapi.file import File
 
 from canvy.const import CONFIG_PATH, LOG_FN, LOGGING_CONFIG, OPENAI_MODEL
@@ -90,7 +89,7 @@ def download_structured(
         return False
 
 
-def provider(config: CanvyConfig) -> Model:
+def provider(config: CanvyConfig):
     """
     Get the preferred model provider from the config, default is OpenAI because
     lazy people. Implemented config check to prevent ambiguous errors
@@ -101,6 +100,9 @@ def provider(config: CanvyConfig) -> Model:
     Returns:
         Model: Agno model type to use, of which there are many
     """
+    from agno.models.ollama import Ollama
+    from agno.models.openai.chat import OpenAIChat
+
     e = "Model set to {} but the key isn't in the config"
     if config.default_provider == "OpenAI":
         if key := config.openai_key:
