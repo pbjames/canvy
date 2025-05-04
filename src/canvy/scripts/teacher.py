@@ -105,7 +105,7 @@ def retrieve_knowledge(config: CanvyConfig, queue: list[Document]):
     return retrieve_knowledge
 
 
-def teacher(config: CanvyConfig) -> None:
+def teacher(config: CanvyConfig, prior_knowledge: list[Document] = []) -> None:
     """
     Basically talk to chatgpt but it can discover about everything in the files downloaded
     through the download tool
@@ -117,7 +117,7 @@ def teacher(config: CanvyConfig) -> None:
     from agno.vectordb.qdrant.qdrant import Qdrant
     from agno.vectordb.search import SearchType
 
-    new_knowledge_queue: list[Document] = []
+    new_knowledge_queue: list[Document] = prior_knowledge
     agent = Agent(
         model=provider(config),
         description=AGENT_DESCRIPTION,
