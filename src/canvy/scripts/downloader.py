@@ -136,7 +136,7 @@ def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
                     ):
                         progress.update(
                             progress_items,
-                            description=f"File: {file.filename}",
+                            description=f"  File: {file.filename}",
                             total=len(items),
                         )
                         executor.submit(safe_download(file, paths))

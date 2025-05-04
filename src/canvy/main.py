@@ -103,7 +103,11 @@ def teacher():
 def courses(*, detailed: bool = False):
     canvas, _ = requires_canvas()
     try:
-        courses: list[Course] = list(canvas.get_courses(enrollment_state="active"))
+        courses: list[Course] = list(
+            canvas.get_courses(  # pyright: ignore[reportUnknownMemberType]
+                enrollment_state="active",
+            ),
+        )
         if detailed:
             from rich.console import Console
             from rich.table import Table
@@ -116,8 +120,8 @@ def courses(*, detailed: bool = False):
             for course in courses:
                 table.add_row(
                     getattr(course, "total_students", ""),
-                    better_course_name(course.name),
-                    course.created_at,
+                    better_course_name(course.name),  # pyright: ignore[reportAny]
+                    course.created_at,  # pyright: ignore[reportAny]
                     getattr(course, "start_at", ""),
                 )
             console = Console()
