@@ -6,6 +6,7 @@ from pathlib import Path
 import typst
 from agno.document.base import Document
 from agno.document.reader.pdf_reader import PDFReader
+from mcp.server import FastMCP
 
 from canvy.const import (
     AGENT_DESCRIPTION,
@@ -19,6 +20,9 @@ from canvy.types import CanvyConfig
 from canvy.utils import create_dir, provider
 
 logger = logging.getLogger(__name__)
+
+# INFO: We need this so the fking dependency doesnt get shaken out :sob:
+mcp = FastMCP()
 
 
 def validate_typst(content: str) -> tuple[bool, bytes]:
