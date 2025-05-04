@@ -90,6 +90,9 @@ def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
     """
     from threading import Lock
 
+    from rich.console import Console
+    from rich.live import Live
+    from rich.panel import Panel
     from rich.progress import Progress
 
     count_lock = Lock()
@@ -104,7 +107,14 @@ def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
 
         return inner
 
-    with Progress() as progress, ThreadPoolExecutor(max_workers=5) as executor:
+    console = Console()
+    progress = Progress(expand=True)
+    panel = Panel(progress, title="Downloading...", border_style="green", width=100)
+
+    with (
+        Live(panel, refresh_per_second=5, console=console),
+        ThreadPoolExecutor(max_workers=5) as executor,
+    ):
         user_courses = list(canvas.get_courses(enrollment_state="active"))
         progress_course = progress.add_task("Course", total=len(user_courses))
         progress_module = progress.add_task("Module")
