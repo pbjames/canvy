@@ -28,9 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 def add_https(url: str):
-    if url.startswith("https://") or url.startswith("http://"):
-        return url
-    return f"https://{url}"
+    return url if url.startswith(("https://", "https://")) else f"https://{url}"
 
 
 def requires_config() -> CanvyConfig:
@@ -43,9 +41,11 @@ def requires_config() -> CanvyConfig:
         choice = Confirm.ask("Config file doesn't exist, create one?")
         if not choice:
             sys.exit(1)
+        url = add_https(input("Canvas URL: "))
+        api_key_url = f"{url}/profile/settings"
         config = CanvyConfig(
-            canvas_url=add_https(input("Canvas URL: ")),
-            canvas_key=getpass("Canvas API Key: "),
+            canvas_url=url,
+            canvas_key=getpass(f"Canvas API Key ({api_key_url}): "),
             storage_path=Path(input("Store path (optional): ") or DEFAULT_DOWNLOAD_DIR),
             openai_key=getpass("Open AI Key (optional): "),
             ollama_model=input("Ollama model (optional): "),
@@ -192,9 +192,11 @@ def set_config(  # noqa: PLR0913
     from canvy.utils import set_config
 
     try:
+        url = add_https(canvas_url or input("Canvas URL -> https://"))
+        api_key_url = f"{url}/profile/settings"
         config = CanvyConfig(
-            canvas_url=add_https(canvas_url or input("Canvas URL -> https://")),
-            canvas_key=canvas_key or getpass("Canvas API Key: "),
+            canvas_url=url,
+            canvas_key=canvas_key or getpass(f"Canvas API Key ({api_key_url}): "),
             storage_path=storage_path or DEFAULT_DOWNLOAD_DIR,
             openai_key=openai_key or "",
             ollama_model=ollama_model or "",
