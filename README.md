@@ -18,7 +18,7 @@ All-in-one manager for _educational resources_ hosted on **Canvas**.
 
 ## Usage
 
-[![asciicast](https://asciinema.org/a/pEzUGLWc55PfKzXmb282NqtDS.svg)](https://asciinema.org/a/pEzUGLWc55PfKzXmb282NqtDS)
+[![asciicast](https://asciinema.org/a/pEzUGLWc55PfKzXmb282NqtDS.svg)](https://asciinema.org/a/pEzUGLWc55PfKzXmb282NqtDS?speed=2)
 
 ## Installation
 
