@@ -15,6 +15,7 @@ dependencies = [
   "canvasapi>=3.3.0",
   "duckduckgo-search>=8.0.1",
   "hatch>=1.14.1",
+  "mcp>=1.7.1",
   "ollama>=0.4.8",
   "openai>=1.75.0",
   "platformdirs>=4.3.7",
