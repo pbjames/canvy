@@ -31,9 +31,12 @@ def extract_files_from_page(
     page: Page,
 ):
     """
-    Use a regex generated from the ID of the course to scrape canvas file links
+    Use a regex generated from the id of the course to scrape canvas file links
     and add them to the download queue. We do this because there can be many unmarked
     or arbitrarily organised files on Canvas, depending on the module organiser.
+
+    Returns:
+        download_structured arguments
     """
     page_title = getattr(page, "title", "No Title")
     names = [better_course_name(course.name), module.name, page_title]
@@ -57,6 +60,9 @@ def module_item_files(
 ) -> Generator[tuple[list[str], File], None, None]:
     """
     Process module items into the file queue for downloads
+
+    Returns:
+        download_structured arguments - directly and through page scanning
     """
     course_name = better_course_name(course.name)
     if (type := ModuleItemType(item.type)) == ModuleItemType.PAGE:
@@ -70,8 +76,17 @@ def module_item_files(
 
 
 def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
+    # TODO: Define behaviour for canvas files that are more recent than ours
     """
-    Download every file accessible through a Canvas account through courses and modules
+    Download every file accessible through a Canvas account on courses and modules
+
+    Args:
+        canvas: Canvas instance
+        url: Institution URL where the Canvas server is hosted
+        force: Override existing files?
+
+    Returns:
+        Downloaded file count - not including skipped downloads
     """
     from threading import Lock
 

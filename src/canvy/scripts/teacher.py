@@ -22,6 +22,16 @@ logger = logging.getLogger(__name__)
 
 
 def validate_typst(content: str) -> tuple[bool, bytes]:
+    """
+    Tell the LLM off for generating non-compiling typst code
+
+    Args:
+        content: Text to evaluate and compile into PDF
+
+    Returns:
+        (True, content): Conversion successful
+        (False, err_msg): Conversion fails
+    """
     try:
         logger.info(f"content: {content}")
         converted = typst.compile(content.encode("utf-8"))
@@ -105,10 +115,13 @@ def retrieve_knowledge(config: CanvyConfig, queue: list[Document]):
     return retrieve_knowledge
 
 
-def teacher(config: CanvyConfig, prior_knowledge: list[Document] = []) -> None:
+def teacher(config: CanvyConfig, prior_knowledge: list[Document] | None = None) -> None:
     """
-    Basically talk to chatgpt but it can discover about everything in the files downloaded
-    through the download tool
+    Use LLMs to ask questions about the content of the slides from Canvas, the resources
+    MUST be downloaded locally beforehand.
+
+    Args:
+        prior_knowledge: Documents to add prior to interaction
     """
     from agno.agent.agent import Agent
     from agno.embedder.openai import OpenAIEmbedder
@@ -117,7 +130,7 @@ def teacher(config: CanvyConfig, prior_knowledge: list[Document] = []) -> None:
     from agno.vectordb.qdrant.qdrant import Qdrant
     from agno.vectordb.search import SearchType
 
-    new_knowledge_queue: list[Document] = prior_knowledge
+    new_knowledge_queue: list[Document] = prior_knowledge or []
     agent = Agent(
         model=provider(config),
         description=AGENT_DESCRIPTION,
