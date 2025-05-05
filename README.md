@@ -1,5 +1,10 @@
 # Canvy
 
+[![image](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![image](https://img.shields.io/pypi/v/canvy.svg)](https://pypi.python.org/pypi/canvy)
+[![image](https://img.shields.io/pypi/l/canvy.svg)](https://pypi.python.org/pypi/canvy)
+[![image](https://img.shields.io/github/actions/workflow/status/pbjames/canvy/release.yml)](https://github.com/pbjames/canvy/actions)
+
 <!--toc:start-->
 - [Canvy](#canvy)
   - [Features](#features)
