@@ -13,8 +13,9 @@ from typer import Typer
 from canvy.const import (
     CONFIG_PATH,
     DEFAULT_DOWNLOAD_DIR,
+    LOG_FN,
 )
-from canvy.types import CanvyConfig, ModelProvider
+from canvy.types import CLIClearFile, CanvyConfig, ModelProvider
 from canvy.utils import (
     better_course_name,
     create_dir,
@@ -211,6 +212,15 @@ def set_config(  # noqa: PLR0913
         pprint(f"Input values are incorrect: {e}")
     except (EOFError, KeyboardInterrupt):
         pprint("\n[bold red]Closing[/bold red]..")
+
+
+@cli.command(short_help="Delete log files")
+def clear(file_type: CLIClearFile):
+    if (ft := CLIClearFile(file_type)) is CLIClearFile.LOGS:
+        for path in LOG_FN.parent.glob(f"{LOG_FN.name}*"):
+            path.unlink()
+    elif ft is CLIClearFile.CONFIG:
+        delete_config()
 
 
 # @cli.callback(invoke_without_command=True)

@@ -68,6 +68,11 @@ class CanvyConfig(BaseModel):
         return str(value)
 
 
+class CLIClearFile(StrEnum):
+    LOGS = "logs"
+    CONFIG = "config"
+
+
 # INFO: Used for the children of modules (ModuleItem)
 class ModuleItemType(StrEnum):
     HEADER = "SubHeader"
