@@ -6,6 +6,7 @@ import logging
 import re
 from collections.abc import Generator
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 from canvasapi.canvas import Canvas
 from canvasapi.course import Course
@@ -75,7 +76,9 @@ def module_item_files(
         yield (names, file)
 
 
-def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
+def download(
+    canvas: Canvas, url: str, storage_dir: Path | None = None, *, force: bool = False
+) -> int:
     # TODO: Define behaviour for canvas files that are more recent than ours
     """
     Download every file accessible through a Canvas account on courses and modules
@@ -100,7 +103,9 @@ def download(canvas: Canvas, url: str, *, force: bool = False) -> int:
 
     def safe_download(file: File, paths: list[str]):
         def inner():
-            res = download_structured(file, *paths, force=force)
+            res = download_structured(
+                file, *paths, storage_dir=storage_dir, force=force
+            )
             with count_lock:
                 nonlocal download_count
                 download_count += res
