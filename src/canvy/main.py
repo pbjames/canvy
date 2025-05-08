@@ -15,7 +15,7 @@ from canvy.const import (
     DEFAULT_DOWNLOAD_DIR,
     LOG_FN,
 )
-from canvy.types import CLIClearFile, CanvyConfig, ModelProvider
+from canvy.types import CanvyConfig, CLIClearFile, ModelProvider
 from canvy.utils import (
     better_course_name,
     create_dir,
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 def add_https(url: str):
-    return url if url.startswith(("https://", "https://")) else f"https://{url}"
+    return url if url.startswith(("https://", "http://")) else f"https://{url}"
 
 
 def requires_config() -> CanvyConfig:
