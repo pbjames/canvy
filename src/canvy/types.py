@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, field_serializer, field_validator
 from canvy.const import (
     API_KEY_DESC,
     API_KEY_REGEX,
+    DEFAULT_DOWNLOAD_DIR,
     DEFAULT_PROVIDER_DESC,
     EDU_URL_DESC,
     OLLAMA_MODEL_DESC,
@@ -29,10 +30,8 @@ class CanvyConfig(BaseModel):
     canvas_url: str = Field(description=EDU_URL_DESC, pattern=URL_REGEX)
     openai_key: str = Field(default="", description=OPENAI_KEY_DESC)
     ollama_model: str = Field(default="", description=OLLAMA_MODEL_DESC)
-    storage_path: Path = Field(description=STORAGE_PATH_DESC)
-    default_provider: ModelProvider = Field(
-        ModelProvider.OPENAI, description=DEFAULT_PROVIDER_DESC
-    )
+    storage_path: Path = Field(default=DEFAULT_DOWNLOAD_DIR, description=STORAGE_PATH_DESC)
+    default_provider: ModelProvider = Field(default=ModelProvider.OPENAI, description=DEFAULT_PROVIDER_DESC )
 
     @field_validator("storage_path")
     @classmethod
