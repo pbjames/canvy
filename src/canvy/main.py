@@ -223,10 +223,11 @@ def clear(file_type: CLIClearFile):
         delete_config()
 
 
-# @cli.callback(invoke_without_command=True)
-# def tui():
-#     from canvy.tui import run
-#     run()
+@cli.callback(invoke_without_command=True)
+def tui():
+    from canvy.tui import run
+
+    run()
 
 
 def main():
