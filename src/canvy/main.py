@@ -8,7 +8,7 @@ from canvasapi.requester import ResourceDoesNotExist
 from pydantic import ValidationError
 from rich import print as pprint
 from rich.prompt import Confirm, Prompt
-from typer import Typer
+from typer import Context, Typer
 
 from canvy.const import (
     CONFIG_PATH,
@@ -218,10 +218,11 @@ def clear(file_type: CLIClearFile):
 
 
 @cli.callback(invoke_without_command=True)
-def tui():
+def tui(ctx: Context):
     from canvy.tui import run
 
-    run()
+    if ctx.invoked_subcommand is None:
+        run()
 
 
 def main():

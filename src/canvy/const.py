@@ -12,6 +12,12 @@ from canvy import APP_NAME
 
 logger = logging.getLogger(__name__)
 
+
+LOGIN_CULPRITS: Final[dict[str, str]] = {
+    "canvas_key": "Canvas API Key",
+    "canvas_url": "Canvas URL",
+}
+
 OPENAI_MODEL: Final[str] = "gpt-4.1-mini"
 OPENAI_EMBEDDINGS: Final[str] = "text-embedding-3-small"
 

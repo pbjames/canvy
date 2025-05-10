@@ -1,5 +1,6 @@
 import logging
-from typing import Callable, ClassVar, Final, override
+from collections.abc import Callable
+from typing import ClassVar, override
 
 from pydantic import ValidationError
 from textual import on
@@ -7,20 +8,14 @@ from textual.app import App, ComposeResult
 from textual.binding import BindingType
 from textual.containers import Center
 from textual.message import Message
-from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Button, Input
 
+from canvy.const import LOGIN_CULPRITS
 from canvy.types import CanvyConfig
 from canvy.utils import has_config, set_config
 
 logger = logging.getLogger(__name__)
-
-
-LOGIN_CULPRITS: Final[dict[str, str]] = {
-    "canvas_key": "Canvas API Key",
-    "canvas_url": "Canvas URL",
-}
 
 
 class LoginPage(Screen[None]):
@@ -95,12 +90,11 @@ class LoginPage(Screen[None]):
 
 
 class Canvy(App[None]):
-    MODES: ClassVar[dict[str, Callable[list[str], Screen[None]]]] = {
+    MODES: ClassVar[dict[str, str | Callable[..., Screen[None]]]] = {
         "login": LoginPage,
         "main": Screen,
     }
     BINDINGS: ClassVar[list[BindingType]] = []
-    logged_in: reactive[bool] = reactive(False)  # noqa: FBT003
 
     @on(LoginPage.Success)
     def switch_from_login_page(self):
