@@ -36,6 +36,15 @@ def create_dir(directory: Path) -> None:
     os.makedirs(directory, exist_ok=True)
 
 
+def has_config(path: Path | None = None) -> bool:
+    try:
+        get_config(path)
+        return True
+    except Exception as e:
+        logger.info(f"Config test fail: {e}")
+        return False
+
+
 def get_config(path: Path | None = None) -> CanvyConfig:
     path = path or CONFIG_PATH
     with open(path) as fp:

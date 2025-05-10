@@ -28,10 +28,6 @@ cli = Typer()
 logger = logging.getLogger(__name__)
 
 
-def add_https(url: str):
-    return url if url.startswith(("https://", "http://")) else f"https://{url}"
-
-
 def requires_config() -> CanvyConfig:
     try:
         config = get_config()
@@ -42,7 +38,7 @@ def requires_config() -> CanvyConfig:
         choice = Confirm.ask("Config file doesn't exist, create one?")
         if not choice:
             sys.exit(1)
-        url = add_https(input("Canvas URL: "))
+        url = input("Canvas URL: ")
         api_key_url = f"{url}/profile/settings"
         config = CanvyConfig(
             canvas_url=url,
@@ -144,9 +140,7 @@ def edit_config():
     current = requires_config()
     try:
         new = CanvyConfig(
-            canvas_url=add_https(
-                Prompt.ask("Canvas URL: ", default=current.canvas_url)
-            ),
+            canvas_url=Prompt.ask("Canvas URL: ", default=current.canvas_url),
             canvas_key=Prompt.ask(
                 "Canvas API Key: ",
                 show_default=False,
@@ -197,7 +191,7 @@ def set_config(  # noqa: PLR0913
     from canvy.utils import set_config
 
     try:
-        url = add_https(canvas_url or input("Canvas URL -> https://"))
+        url = canvas_url or input("Canvas URL -> https://")
         api_key_url = f"{url}/profile/settings"
         config = CanvyConfig(
             canvas_url=url,

@@ -30,12 +30,23 @@ class CanvyConfig(BaseModel):
     canvas_url: str = Field(description=EDU_URL_DESC, pattern=URL_REGEX)
     openai_key: str = Field(default="", description=OPENAI_KEY_DESC)
     ollama_model: str = Field(default="", description=OLLAMA_MODEL_DESC)
-    storage_path: Path = Field(default=DEFAULT_DOWNLOAD_DIR, description=STORAGE_PATH_DESC)
-    default_provider: ModelProvider = Field(default=ModelProvider.OPENAI, description=DEFAULT_PROVIDER_DESC )
+    storage_path: Path = Field(
+        default=DEFAULT_DOWNLOAD_DIR, description=STORAGE_PATH_DESC
+    )
+    default_provider: ModelProvider = Field(
+        default=ModelProvider.OPENAI, description=DEFAULT_PROVIDER_DESC
+    )
+
+    @field_validator("canvas_url")
+    @staticmethod
+    def add_https(value: str):
+        return (
+            value if value.startswith(("https://", "http://")) else f"https://{value}"
+        )
 
     @field_validator("storage_path")
-    @classmethod
-    def verify_accessible_path(cls, value: Path) -> Path:
+    @staticmethod
+    def verify_accessible_path(value: Path) -> Path:
         """
         Test if the user can access a given path to prevent compounding files access errors
         """
