@@ -2,7 +2,7 @@
 
 [![image](https://img.shields.io/pypi/v/canvy.svg)](https://pypi.python.org/pypi/canvy)
 [![image](https://img.shields.io/pypi/l/canvy.svg)](https://pypi.python.org/pypi/canvy)
-[![image](https://img.shields.io/github/actions/workflow/status/pbjames/canvy/release.yml?branch=main&label=release)](https://github.com/pbjames/canvy/actions)
+[![image](https://img.shields.io/github/actions/workflow/status/pbjames/canvy/release-tag.yml?branch=main&label=release)](https://github.com/pbjames/canvy/actions)
 [![image](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 <!--toc:start-->
