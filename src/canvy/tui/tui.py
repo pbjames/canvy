@@ -37,9 +37,9 @@ class LoginPage(VerticalGroup):
         def __init__(self) -> None:
             super().__init__()
 
-    def on_button_pressed(self, event: Button.Pressed):
-        url_input: str = self.query_one("#url_input").value
-        sk_input: str = self.query_one("#sk_input").value
+    def on_button_pressed(self, _: Button.Pressed):
+        url_input: str = self.query_one("#url_input", expect_type=Input).value
+        sk_input: str = self.query_one("#sk_input", expect_type=Input).value
         logger.info(f"Login page info: {url_input}: {sk_input[:5] + "."*20}")
         try:
             config = CanvyConfig(canvas_url=url_input, canvas_key=sk_input)
@@ -62,7 +62,7 @@ class Canvy(App[None]):
 
     @on(LoginPage.Success)
     def hide_login_page(self):
-        self.query_one(LoginPage).set_class(True, "-invisible")
+        self.query_one(LoginPage).set_class(True, "-invisible")  # noqa: FBT003
 
     @override
     def compose(self) -> ComposeResult:
