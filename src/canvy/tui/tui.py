@@ -1,14 +1,15 @@
 import logging
-from typing import ClassVar, Final, override
+from typing import Callable, ClassVar, Final, override
 
 from pydantic import ValidationError
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import BindingType
-from textual.containers import Center, VerticalGroup
+from textual.containers import Center
 from textual.message import Message
 from textual.reactive import reactive
-from textual.widgets import Button, Footer, Header, Input
+from textual.screen import Screen
+from textual.widgets import Button, Input
 
 from canvy.types import CanvyConfig
 from canvy.utils import has_config, set_config
@@ -22,20 +23,20 @@ LOGIN_CULPRITS: Final[dict[str, str]] = {
 }
 
 
-class LoginPage(VerticalGroup):
+class LoginPage(Screen[None]):
     DEFAULT_CSS: ClassVar[
         str
     ] = """
+    Screen {
+        align: center middle;
+    }
+
     LoginPage {
         layout: vertical;
         align: center middle;
         border-title-align: center;
-        offset-x: 0;
         transition: offset 200ms;
         width: 30%;
-        &.-invisible {
-            offset-x: -350%;
-        }
         border: heavy gray;
         padding: 2;
     }
@@ -84,8 +85,8 @@ class LoginPage(VerticalGroup):
 
     @override
     def compose(self) -> ComposeResult:
-        yield Input(id="url_input")
-        yield Input(id="sk_input")
+        yield Input(placeholder="Your Canvas URL", id="url_input")
+        yield Input(placeholder="API Key", id="sk_input")
         with Center():
             yield Button("Submit", variant="success")
 
@@ -94,30 +95,23 @@ class LoginPage(VerticalGroup):
 
 
 class Canvy(App[None]):
-    DEFAULT_CSS: ClassVar[
-        str
-    ] = """
-    Screen {
-        align: center middle;
+    MODES: ClassVar[dict[str, Callable[list[str], Screen[None]]]] = {
+        "login": LoginPage,
+        "main": Screen,
     }
-    """
     BINDINGS: ClassVar[list[BindingType]] = []
     logged_in: reactive[bool] = reactive(False)  # noqa: FBT003
 
     @on(LoginPage.Success)
-    def hide_login_page(self):
-        self.query_one(LoginPage).set_class(True, "-invisible")  # noqa: FBT003
+    def switch_from_login_page(self):
+        self.switch_mode("main")
 
     @on(LoginPage.Error)
     def notify_login_error(self, message: LoginPage.Error):
         self.notify(message.err_msg, severity="error")
 
-    @override
-    def compose(self) -> ComposeResult:
-        yield Header()
-        if not has_config():
-            yield LoginPage()
-        yield Footer()
+    def on_mount(self):
+        self.switch_mode("login" if not has_config() else "main")
 
 
 def run():
