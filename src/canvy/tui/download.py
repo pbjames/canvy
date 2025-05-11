@@ -1,21 +1,45 @@
 import logging
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from typing import ClassVar, override
 
-from textual import on
+from canvasapi.canvas import Canvas
+from canvasapi.file import File
+from textual import on, work
 from textual.app import ComposeResult
+from textual.color import Gradient
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.message import Message
+from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import (
     Button,
     DirectoryTree,
+    Label,
     MarkdownViewer,
     ProgressBar,
 )
 
-from canvy.utils import get_config
+from canvy.scripts.downloader import module_item_files
+from canvy.utils import download_structured, get_config
 
 logger = logging.getLogger(__name__)
+
+
+COOL_GRADIENT: Gradient = Gradient.from_colors(
+    "#881177",
+    "#aa3355",
+    "#cc6666",
+    "#ee9944",
+    "#eedd00",
+    "#99dd55",
+    "#44dd88",
+    "#22ccbb",
+    "#00bbcc",
+    "#0099cc",
+    "#3366bb",
+    "#663399",
+)
 
 
 class FSTree(DirectoryTree):
@@ -42,7 +66,13 @@ class Content(VerticalGroup):
         content-align: center top;
         height: 100%
     }
+    /*
+    border: 'ascii', 'blank', 'dashed', 'double', 'heavy', 'hidden', 'hkey', 'inner',
+            'none', 'outer', 'panel', 'round', 'solid', 'tab', 'tall', 'thick', 'vkey',
+            'wide'
+    */
     """
+    # TODO: Update on select
 
     @override
     def compose(self) -> ComposeResult:
@@ -110,14 +140,13 @@ class DownloadControl(HorizontalGroup):
     }
 
     #group_1 {
-        margin: 1;
-        width: 65%
+        align: center middle;
+        width: 65%;
     }
 
     #group_2 {
         align: center middle;
-        margin: 0;
-        width: 35%
+        width: 35%;
     }
 
     #download_button {
@@ -127,9 +156,35 @@ class DownloadControl(HorizontalGroup):
     #cancel_button {
         margin-right: 3;
     }
+
+    VerticalGroup {
+        width: auto;
+        margin: 0 3;
+    }
     """
-    # INFO: 'ascii', 'blank', 'dashed', 'double', 'heavy', 'hidden', 'hkey', 'inner',
-    # 'none', 'outer', 'panel', 'round', 'solid', 'tab', 'tall', 'thick', 'vkey', or 'wide'
+
+    download_count: reactive[int] = reactive(0)
+
+    @override
+    def compose(self) -> ComposeResult:
+        with HorizontalGroup(id="group_1"):
+            with VerticalGroup():
+                yield Label("Files", id="lab_files")
+                yield ProgressBar(id="pg_files", show_eta=False, gradient=COOL_GRADIENT)
+            with VerticalGroup():
+                yield Label("Modules", id="lab_modules")
+                yield ProgressBar(
+                    id="pg_modules", show_eta=False, gradient=COOL_GRADIENT
+                )
+            with VerticalGroup():
+                yield Label("Courses", id="lab_courses")
+                yield ProgressBar(
+                    id="pg_courses", show_eta=False, gradient=COOL_GRADIENT
+                )
+        with HorizontalGroup(id="group_2"):
+            yield Button("Download", id="download_button", variant="success")
+            yield Button("Cancel", id="cancel_button", variant="primary")
+            yield Button("Quit", id="quit_button", variant="error")
 
     class Start(Message): ...
 
@@ -138,40 +193,87 @@ class DownloadControl(HorizontalGroup):
     class Quit(Message): ...
 
     @on(Button.Pressed, "#download_button")
-    def start_download(self) -> None: ...
+    def start_download(self) -> None:
+        self.post_message(self.Start())
+        self.download()
 
     @on(Button.Pressed, "#cancel_button")
-    def stop_download(self) -> None: ...
+    def stop_download(self) -> None:
+        # TODO: doesn't work at all
+        self.workers.cancel_all()
+        self.query_exactly_one("#pg_courses", expect_type=ProgressBar).update(total=0)
+        self.query_exactly_one("#pg_modules", expect_type=ProgressBar).update(total=0)
+        self.query_exactly_one("#pg_files", expect_type=ProgressBar).update(total=0)
+        self.post_message(self.Stop())
 
     @on(Button.Pressed, "#quit_button")
     def quit(self) -> None:
         self.post_message(self.Quit())
 
-    @override
-    def compose(self) -> ComposeResult:
-        with HorizontalGroup(id="group_1"):
-            yield ProgressBar()
-            yield ProgressBar()
-            yield ProgressBar()
-        with HorizontalGroup(id="group_2"):
-            yield Button("Download", id="download_button", variant="success")
-            yield Button("Cancel", id="cancel_button", variant="primary")
-            yield Button("Quit", id="quit_button", variant="error")
+    @work(thread=True)
+    def download(self, *, force: bool = False):
+        # TODO: Fix course length inaccuracy
+        count_lock = Lock()
+        config = get_config()
+        canvas = Canvas(config.canvas_url, config.canvas_key)
+
+        def safe_download(file: File, paths: list[str]):
+            def inner():
+                res = download_structured(
+                    file, *paths, storage_dir=config.storage_path, force=force
+                )
+                with count_lock:
+                    self.download_count += res
+
+            return inner
+
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            progress_courses = self.query_exactly_one(
+                "#pg_courses", expect_type=ProgressBar
+            )
+            progress_modules = self.query_exactly_one(
+                "#pg_modules", expect_type=ProgressBar
+            )
+            progress_files = self.query_exactly_one(
+                "#pg_files", expect_type=ProgressBar
+            )
+            label_courses = self.query_exactly_one("#lab_courses", expect_type=Label)
+            label_modules = self.query_exactly_one("#lab_modules", expect_type=Label)
+            label_files = self.query_exactly_one("#lab_files", expect_type=Label)
+            user_courses = list(canvas.get_courses(enrollment_state="active"))
+            for course in user_courses:
+                label_courses.update(f"Course: {course.course_code}")
+                progress_courses.update(total=len(user_courses))
+                url = config.canvas_url
+                files_regex = rf"{url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
+                for module in (modules := list(course.get_modules())):
+                    label_modules.update(f"Module: {module.name}")
+                    progress_modules.update(total=len(modules))
+                    for item in module.get_module_items():
+                        path_files = list(
+                            module_item_files(canvas, course, module, files_regex, item)
+                        )
+                        progress_files.update(total=len(path_files))
+                        for paths, file in path_files:
+                            label_files.update(f"Files: {file.filename}")
+                            executor.submit(safe_download(file, paths))
+                        progress_files.advance()
+                    progress_modules.advance()
+                    progress_files.update(total=0)
+                progress_courses.advance()
+                progress_modules.update(total=0)
+            progress_courses.update(total=0)
 
 
 class DownloadPage(Screen[None]):
-    DEFAULT_CSS: ClassVar[
-        str
-    ] = """
-    DownloadPage {
-    }
-    """
-
     @override
     def compose(self) -> ComposeResult:
         config = get_config()
         with HorizontalGroup():
-            yield FSTree(config.storage_path)
+            fst = FSTree(config.storage_path)
+            # TODO: Don't work
+            fst.auto_refresh = 3
+            yield fst
             yield Content()
         yield DownloadControl()
 
