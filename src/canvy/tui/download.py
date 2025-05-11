@@ -1,3 +1,7 @@
+# pyright: reportAny=false
+# pyright: reportUnknownVariableType=false
+# pyright: reportUnknownArgumentType=false
+# pyright: reportUnknownMemberType=false
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
@@ -244,14 +248,12 @@ class DownloadControl(HorizontalGroup):
             for course in user_courses:
                 label_courses.update(f"Course: {course.course_code}")
                 progress_courses.update(total=len(user_courses))
-                url = config.canvas_url
-                files_regex = rf"{url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
                 for module in (modules := list(course.get_modules())):
                     label_modules.update(f"Module: {module.name}")
                     progress_modules.update(total=len(modules))
                     for item in module.get_module_items():
                         path_files = list(
-                            module_item_files(canvas, course, module, files_regex, item)
+                            module_item_files(canvas, course, module, item)
                         )
                         progress_files.update(total=len(path_files))
                         for paths, file in path_files:

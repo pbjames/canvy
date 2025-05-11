@@ -16,10 +16,7 @@ from canvasapi.module import Module, ModuleItem
 from canvasapi.page import Page
 
 from canvy.types import ModuleItemType
-from canvy.utils import (
-    better_course_name,
-    download_structured,
-)
+from canvy.utils import better_course_name, download_structured, get_config
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +25,6 @@ def extract_files_from_page(
     canvas: Canvas,
     course: Course,
     module: Module,
-    regex: str,
     page: Page,
 ):
     """
@@ -39,6 +35,8 @@ def extract_files_from_page(
     Returns:
         download_structured arguments
     """
+    # INFO: There has to be a better way bro
+    regex = rf"{get_config().canvas_url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
     page_title = getattr(page, "title", "No Title")
     names = [better_course_name(course.name), module.name, page_title]
     if getattr(page, "body", None) is None:
@@ -57,7 +55,7 @@ def extract_files_from_page(
 
 
 def module_item_files(
-    canvas: Canvas, course: Course, module: Module, regex: str, item: ModuleItem
+    canvas: Canvas, course: Course, module: Module, item: ModuleItem
 ) -> Generator[tuple[list[str], File], None, None]:
     """
     Process module items into the file queue for downloads
@@ -68,7 +66,7 @@ def module_item_files(
     course_name = better_course_name(course.name)
     if (type := ModuleItemType(item.type)) == ModuleItemType.PAGE:
         page = course.get_page(item.page_url)
-        yield from extract_files_from_page(canvas, course, module, regex, page)
+        yield from extract_files_from_page(canvas, course, module, page)
     elif type is ModuleItemType.ATTACHMENT:
         file = canvas.get_file(item.content_id)
         names = [course_name, module.name]
@@ -77,7 +75,7 @@ def module_item_files(
 
 
 def download(
-    canvas: Canvas, url: str, storage_dir: Path | None = None, *, force: bool = False
+    canvas: Canvas, storage_dir: Path | None = None, *, force: bool = False
 ) -> int:
     # TODO: Define behaviour for canvas files that are more recent than ours
     """
@@ -128,7 +126,6 @@ def download(
             progress.update(
                 progress_course, description=f"Course: {course.course_code}"
             )
-            files_regex = rf"{url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
             for module in (modules := list(course.get_modules())):
                 progress.update(
                     progress_module,
@@ -136,9 +133,7 @@ def download(
                     total=len(modules),
                 )
                 for item in (items := list(module.get_module_items())):
-                    for paths, file in module_item_files(
-                        canvas, course, module, files_regex, item
-                    ):
+                    for paths, file in module_item_files(canvas, course, module, item):
                         progress.update(
                             progress_items,
                             description=f"  File: {file.filename}",
