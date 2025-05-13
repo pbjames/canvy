@@ -111,7 +111,6 @@ def test_teacher_load_docs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         return
 
     def exit_upon_twice(_):
-        # TODO: Fix this ass code
         nonlocal count
         count += 1
         return "" if count < 5 else "exit"

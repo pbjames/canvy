@@ -8,6 +8,7 @@ from pathlib import Path
 from threading import Lock
 from typing import ClassVar, override
 
+from agno.document.reader.pdf_reader import PDFReader
 from canvasapi.canvas import Canvas
 from canvasapi.file import File
 from textual import on, work
@@ -22,7 +23,7 @@ from textual.widgets import (
     Button,
     DirectoryTree,
     Label,
-    MarkdownViewer,
+    Markdown,
     ProgressBar,
 )
 
@@ -100,60 +101,25 @@ class Content(VerticalGroup):
             'wide'
     */
     """
-    # TODO: Update on select
 
     @override
     def compose(self) -> ComposeResult:
-        yield MarkdownViewer(
+        yield Markdown(
             """\
-# Markdown Viewer
+# Canvy
 
-This is an example of Textual's `MarkdownViewer` widget.
+Content for a selected file will appear here, it doesn't work very well with PDFs at the \
+moment - unless you use an LLM.
 
-
-## Features
+## Supported File Types
 
 Markdown syntax and extensions are supported.
 
-- Typography *emphasis*, **strong**, `inline code` etc.
-- Headers
-- Lists (bullet and ordered)
-- Syntax highlighted code blocks
-- Tables!
-
-## Tables
-
-Tables are displayed in a DataTable widget.
-
-| Name            | Type   | Default | Description                        |
-| --------------- | ------ | ------- | ---------------------------------- |
-| `show_header`   | `bool` | `True`  | Show the table header              |
-| `fixed_rows`    | `int`  | `0`     | Number of fixed rows               |
-| `fixed_columns` | `int`  | `0`     | Number of fixed columns            |
-| `zebra_stripes` | `bool` | `False` | Display alternating colors on rows |
-| `header_height` | `int`  | `1`     | Height of header row               |
-| `show_cursor`   | `bool` | `True`  | Show a cell cursor                 |
-
-
-## Code Blocks
-
-Code blocks are syntax highlighted, with guidelines.
-
-```python
-class ListViewExample(App):
-    def compose(self) -> ComposeResult:
-        yield ListView(
-            ListItem(Label("One")),
-            ListItem(Label("Two")),
-            ListItem(Label("Three")),
-        )
-        yield Footer()
-```
+- PDF documents
+- Plaintext
+- Markdown
 """
         )
-
-    @on(DirectoryTree.FileSelected)
-    def update_on_select(self): ...
 
 
 class DownloadControl(HorizontalGroup):
@@ -231,7 +197,7 @@ class DownloadControl(HorizontalGroup):
     @on(Button.Pressed, "#cancel_button")
     def stop_download(self) -> None:
         # TODO: doesn't work at all
-        self.workers.cancel_all()
+        self.workers.cancel_node(self)
         self.query_exactly_one("#pg_courses", expect_type=ProgressBar).update(total=0)
         self.query_exactly_one("#pg_modules", expect_type=ProgressBar).update(total=0)
         self.query_exactly_one("#pg_files", expect_type=ProgressBar).update(total=0)
@@ -303,6 +269,28 @@ class DownloadPage(Screen[None]):
             yield fst
             yield Content()
         yield DownloadControl()
+
+    @on(FSTree.FileSelected)
+    def update_on_select(self, msg: FSTree.FileSelected):
+        logger.info(f"File {msg.path} selected on FSTree")
+        file_path = msg.path
+        md_widget = self.query_exactly_one(Markdown)
+        if (ext := file_path.suffix) == ".pdf":
+            prefix = """
+# Document Scrape
+
+`If you'd like a readable summary, select a model provider and provide a key \
+and / or model in settings! (This only applies to document files like PDFs)`
+
+"""
+            documents = PDFReader().read(file_path)
+            content = [d.content for d in documents]
+            md_widget.update(prefix + "\n".join(content))
+        elif ext in {".txt", ".md", ""}:
+            # TODO: Needs scrollbar
+            md_widget.update(file_path.read_text())
+        else:
+            logger.warning(f"Unhandled file type: {file_path}")
 
     @on(DownloadControl.Quit)
     def quit(self):

@@ -132,7 +132,6 @@ def courses(*, detailed: bool = False):
         pprint(f"Unknown error: {e}")
 
 
-# TODO: Test ts
 @cli.command(short_help="Edit config")
 def edit_config():
     from canvy.utils import set_config
