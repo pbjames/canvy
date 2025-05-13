@@ -4,6 +4,7 @@
 # pyright: reportUnknownMemberType=false
 import logging
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from threading import Lock
 from typing import ClassVar, override
 
@@ -16,6 +17,7 @@ from textual.containers import HorizontalGroup, VerticalGroup
 from textual.message import Message
 from textual.reactive import reactive
 from textual.screen import Screen
+from textual.timer import Timer
 from textual.widgets import (
     Button,
     DirectoryTree,
@@ -56,6 +58,28 @@ class FSTree(DirectoryTree):
         background: $background;
     }
     """
+
+    timer: Timer | None
+
+    def __init__(
+        self,
+        path: str | Path,
+        *,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+        disabled: bool = False,
+    ) -> None:
+        self.timer = None
+        super().__init__(path, name=name, id=id, classes=classes, disabled=disabled)
+
+    @override
+    def on_mount(self):
+        super().on_mount()
+        self.timer = self.set_interval(3, callback=self.update_time)
+
+    def update_time(self):
+        self.reload()
 
 
 class Content(VerticalGroup):
@@ -127,6 +151,9 @@ class ListViewExample(App):
 ```
 """
         )
+
+    @on(DirectoryTree.FileSelected)
+    def update_on_select(self): ...
 
 
 class DownloadControl(HorizontalGroup):
@@ -273,8 +300,6 @@ class DownloadPage(Screen[None]):
         config = get_config()
         with HorizontalGroup():
             fst = FSTree(config.storage_path)
-            # TODO: Don't work
-            fst.auto_refresh = 3
             yield fst
             yield Content()
         yield DownloadControl()
