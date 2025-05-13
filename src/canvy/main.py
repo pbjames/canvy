@@ -74,7 +74,7 @@ def download(*, force: bool = False):
 
     canvas, config = requires_canvas()
     try:
-        count = download(canvas, config.canvas_url, force=force)
+        count = download(canvas, Path(config.canvas_url), force=force)
         pprint(f"[bold]{count}[/bold] new files! :speaking_head: :fire:")
     except (KeyboardInterrupt, EOFError):
         pprint("[bold red]Download stopping[/bold red]...")
