@@ -3,6 +3,7 @@ import os
 import sys
 from pathlib import Path
 
+from agno.agent.agent import Agent
 import typst
 from agno.document.base import Document
 from agno.document.reader.pdf_reader import PDFReader
@@ -119,7 +120,12 @@ def retrieve_knowledge(config: CanvyConfig, queue: list[Document]):
     return retrieve_knowledge
 
 
-def teacher(config: CanvyConfig, prior_knowledge: list[Document] | None = None) -> None:
+def teacher(
+    config: CanvyConfig,
+    prior_knowledge: list[Document] | None = None,
+    *,
+    interactive: bool = True,
+) -> Agent:
     """
     Use LLMs to ask questions about the content of the slides from Canvas, the resources
     MUST be downloaded locally beforehand.
@@ -162,12 +168,15 @@ def teacher(config: CanvyConfig, prior_knowledge: list[Document] | None = None) 
         read_chat_history=True,
         markdown=True,
     )
-    while True:
-        user_input = input(">>> ")
-        if user_input in STOP_WORDS:
-            sys.exit(0)
-        agent.print_response(user_input)  # pyright: ignore[reportUnknownMemberType]
-        if new_knowledge_queue and agent.knowledge is not None:
-            logger.info("Adding new knowledge")
-            agent.knowledge.load_documents(new_knowledge_queue, skip_existing=True)
-            new_knowledge_queue.clear()
+    if interactive:
+        while True:
+            user_input = input(">>> ")
+            if user_input in STOP_WORDS:
+                sys.exit(0)
+            agent.print_response(user_input)  # pyright: ignore[reportUnknownMemberType]
+            if new_knowledge_queue and agent.knowledge is not None:
+                logger.info("Adding new knowledge")
+                agent.knowledge.load_documents(new_knowledge_queue, skip_existing=True)
+                new_knowledge_queue.clear()
+    else:
+        return agent

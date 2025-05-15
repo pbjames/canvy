@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class ModelProvider(StrEnum):
+    NONE = "None"
     OLLAMA = "Ollama"
     OPENAI = "OpenAI"
 
@@ -34,7 +35,7 @@ class CanvyConfig(BaseModel):
         default=DEFAULT_DOWNLOAD_DIR, description=STORAGE_PATH_DESC
     )
     default_provider: ModelProvider = Field(
-        default=ModelProvider.OPENAI, description=DEFAULT_PROVIDER_DESC
+        default=ModelProvider.NONE, description=DEFAULT_PROVIDER_DESC
     )
 
     @field_validator("canvas_url")

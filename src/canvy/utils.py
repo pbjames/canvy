@@ -118,9 +118,10 @@ def provider(config: CanvyConfig):
             return OpenAIChat(id=OPENAI_MODEL, api_key=key)
         else:
             raise ValueError(e.format("OpenAI"))
-    # elif config.default_provider == "Ollama":
-    else:  # noqa: PLR5501
+    elif config.default_provider == "Ollama":
         if model := config.ollama_model:
             return Ollama(id=model)
         else:
             raise ValueError(e.format("Ollama"))
+    else:
+        return None
