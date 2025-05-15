@@ -161,6 +161,11 @@ class DownloadControl(HorizontalGroup):
     """
 
     download_count: reactive[int] = reactive(0)
+    _terminate: bool = False
+
+    @property
+    def terminate(self):
+        return self._terminate
 
     @override
     def compose(self) -> ComposeResult:
@@ -196,8 +201,7 @@ class DownloadControl(HorizontalGroup):
 
     @on(Button.Pressed, "#cancel_button")
     def stop_download(self) -> None:
-        # TODO: doesn't work at all
-        self.workers.cancel_node(self)
+        self._terminate = True
         self.query_exactly_one("#pg_courses", expect_type=ProgressBar).update(total=0)
         self.query_exactly_one("#pg_modules", expect_type=ProgressBar).update(total=0)
         self.query_exactly_one("#pg_files", expect_type=ProgressBar).update(total=0)
@@ -250,8 +254,12 @@ class DownloadControl(HorizontalGroup):
                         )
                         progress_files.update(total=len(path_files))
                         for paths, file in path_files:
-                            label_files.update(f"Files: {file.filename}")
-                            executor.submit(safe_download(file, paths))
+                            if self.terminate:
+                                executor.shutdown(wait=False, cancel_futures=True)
+                                return
+                            else:
+                                label_files.update(f"Files: {file.filename}")
+                                executor.submit(safe_download(file, paths))
                         progress_files.advance()
                     progress_modules.advance()
                     progress_files.update(total=0)
