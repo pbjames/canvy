@@ -3,13 +3,20 @@ from __future__ import annotations
 import logging.config
 import os
 import re
+from collections.abc import Iterable
 from functools import reduce
 from pathlib import Path
 
 import toml
 from canvasapi.file import File
 
-from canvy.const import CONFIG_PATH, LOG_FN, LOGGING_CONFIG, OPENAI_MODEL
+from canvy.const import (
+    CONFIG_PATH,
+    LOG_FN,
+    LOGGING_CONFIG,
+    OPENAI_MODEL,
+    SUMMARIES_DIRNAME,
+)
 from canvy.types import CanvyConfig
 
 logger = logging.getLogger(__name__)
@@ -79,23 +86,26 @@ def download_structured(
         If the file was downloaded
     """
     download_dir = Path(storage_dir or get_config().storage_path).expanduser()
-    path: Path = reduce(lambda p, q: p / q, [download_dir, *map(Path, dirs)])
-    filename: str = file.filename  # pyright: ignore[reportAny]
-    file_path: Path = path / filename
-    create_dir(path)
+    file_name = file.filename  # pyright: ignore[reportAny]
+    file_path: Path = concat_names(download_dir, (*dirs, file_name))
+    create_dir(file_path.parent)
     if not file_path.is_file() or force:
-        logger.info(f"Downloading {filename}{'(forced)' * force} into {file_path}")
+        logger.info(f"Downloading {file_name}{'(forced)' * force} into {file_path}")
         try:
             file.download(file_path)  # pyright: ignore[reportUnknownMemberType]
             return True
         except Exception as e:
             logger.warning(
-                f"Tried to download {filename} but we likely don't have access ({e})"
+                f"Tried to download {file_name} but we likely don't have access ({e})"
             )
             return False
     else:
-        logger.info(f"{filename} already present, skipping")
+        logger.info(f"{file_name} already present, skipping")
         return False
+
+
+def concat_names(base: Path, names: Iterable[str | Path]) -> Path:
+    return reduce(lambda p, q: p / q, [base, *map(Path, names)])
 
 
 def provider(config: CanvyConfig):
@@ -125,3 +135,30 @@ def provider(config: CanvyConfig):
             raise ValueError(e.format("Ollama"))
     else:
         return None
+
+
+def setup_cache_mirror(config: CanvyConfig):
+    base = config.storage_path / SUMMARIES_DIRNAME
+    for path in base.rglob("**/*"):
+        if path.is_file():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.touch()
+        elif path.is_dir():
+            path.mkdir(parents=True, exist_ok=True)
+
+
+def put_summary(config: CanvyConfig, path: Path, summary: str):
+    path = (
+        config.storage_path / SUMMARIES_DIRNAME / path.relative_to(config.storage_path)
+    )
+    path.write_text(summary)
+    logger.info(f"Put summary {summary[:17]}.. into {path}")
+
+
+def get_summary(config: CanvyConfig, path: Path):
+    path = (
+        config.storage_path / SUMMARIES_DIRNAME / path.relative_to(config.storage_path)
+    )
+    content = path.read_text()
+    logger.info(f"Read summary {content}.. from {path}")
+    return content

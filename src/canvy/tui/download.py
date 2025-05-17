@@ -13,9 +13,7 @@ from agno.models.ollama import Ollama
 from agno.models.openai.chat import OpenAIChat
 from canvasapi.canvas import Canvas
 from canvasapi.file import File
-from canvy.const import DOCSCRAPE_DEFAULT_MSG
-from canvy.scripts import teacher
-from canvy.types import CanvyConfig
+from canvasapi.util import file_or_path
 from textual import on, work
 from textual.app import ComposeResult
 from textual.color import Gradient
@@ -32,8 +30,17 @@ from textual.widgets import (
     ProgressBar,
 )
 
+from canvy.const import DOCSCRAPE_DEFAULT_MSG
+from canvy.scripts import teacher
 from canvy.scripts.downloader import module_item_files
-from canvy.utils import download_structured, get_config, provider
+from canvy.types import CanvyConfig
+from canvy.utils import (
+    download_structured,
+    get_config,
+    get_summary,
+    provider,
+    setup_cache_mirror,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -283,6 +290,8 @@ class DownloadPage(Screen[None]):
         super().__init__(name, id, classes)
         self.config = get_config()
         self.llm_provider = provider(self.config)
+        if self.llm_provider is not None:
+            setup_cache_mirror(self.config)  # maybe expensive?
 
     @override
     def compose(self) -> ComposeResult:
@@ -298,25 +307,31 @@ class DownloadPage(Screen[None]):
         file_path = msg.path
         md_widget = self.query_exactly_one(Markdown)
         if (ext := file_path.suffix) == ".pdf":
-            documents = PDFReader().read(file_path)
-            content = "".join(d.content for d in documents)
-            if self.llm_provider is None:
-                md_widget.update(DOCSCRAPE_DEFAULT_MSG + content)
-            else:
-                # TODO: Need to test and cache
-                agent = teacher(self.config, interactive=False)
-                response = agent.run(
-                    f"Summarise the content from: {file_path}", stream=True
-                )
-                total = []
-                for r in response:
-                    total.append(str(r))
-                    md_widget.update("".join(total))
+            self.populate_document(file_path)
         elif ext in {".txt", ".md", ""}:
             # TODO: Needs scrollbar
             md_widget.update(file_path.read_text())
         else:
             logger.warning(f"Unhandled file type: {file_path}")
+
+    def populate_document(self, file_path: Path):
+        md_widget = self.query_exactly_one(Markdown)
+        documents = PDFReader().read(file_path)
+        content = "".join(d.content for d in documents)
+        if self.llm_provider is None:
+            md_widget.update(DOCSCRAPE_DEFAULT_MSG + content)
+        else:
+            agent = teacher(self.config, interactive=False)
+            if response := get_summary(self.config, file_path):
+                md_widget.update(response)
+                return
+            response = agent.run(
+                f"Summarise the content from: {file_path}", stream=True
+            )
+            total = []
+            for r in response:
+                total.append(str(r))
+                md_widget.update("".join(total))
 
     @on(DownloadControl.Quit)
     def quit(self):
