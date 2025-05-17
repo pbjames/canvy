@@ -142,7 +142,10 @@ def setup_cache_mirror(config: CanvyConfig):
     logger.info(f"Setting up cache mirror at {base}")
     for path in config.storage_path.rglob("*"):
         rebased = base / (path.relative_to(config.storage_path))
-        if path.is_file():
+        logger.info(f"{path=} {rebased=}")
+        if SUMMARIES_DIRNAME in str(path):
+            continue
+        elif path.is_file():
             rebased.parent.mkdir(parents=True, exist_ok=True)
             rebased.touch()
         elif path.is_dir():

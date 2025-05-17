@@ -308,7 +308,6 @@ class DownloadPage(Screen[None]):
         if (ext := file_path.suffix) == ".pdf":
             self.populate_document(file_path)
         elif ext in {".txt", ".md", ""}:
-            # TODO: Needs scrollbar
             md_widget.update(file_path.read_text())
         else:
             logger.warning(f"Unhandled file type: {file_path}")
