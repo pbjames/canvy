@@ -3,8 +3,8 @@ import os
 import sys
 from pathlib import Path
 
-from agno.agent.agent import Agent
 import typst
+from agno.agent.agent import Agent
 from agno.document.base import Document
 from agno.document.reader.pdf_reader import PDFReader
 from mcp.server import FastMCP

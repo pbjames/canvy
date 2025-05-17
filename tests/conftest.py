@@ -2,7 +2,6 @@ from pathlib import Path
 
 from agno.models.ollama import Ollama
 from agno.models.openai.chat import OpenAIChat
-
 from canvy.types import CanvyConfig, ModelProvider
 
 CANVAS_TEST_KEY = (

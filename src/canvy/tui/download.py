@@ -13,11 +13,10 @@ from agno.models.ollama import Ollama
 from agno.models.openai.chat import OpenAIChat
 from canvasapi.canvas import Canvas
 from canvasapi.file import File
-from canvasapi.util import file_or_path
 from textual import on, work
 from textual.app import ComposeResult
 from textual.color import Gradient
-from textual.containers import HorizontalGroup, VerticalGroup
+from textual.containers import HorizontalGroup, VerticalGroup, VerticalScroll
 from textual.message import Message
 from textual.reactive import reactive
 from textual.screen import Screen
@@ -116,7 +115,7 @@ class Content(VerticalGroup):
 
     @override
     def compose(self) -> ComposeResult:
-        yield Markdown(
+        yield VerticalScroll(Markdown(
             """\
 # Canvy
 
@@ -131,7 +130,7 @@ Markdown syntax and extensions are supported.
 - Plaintext
 - Markdown
 """
-        )
+        ))
 
 
 class DownloadControl(HorizontalGroup):

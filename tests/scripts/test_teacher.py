@@ -1,10 +1,9 @@
 from pathlib import Path
 
-from agno.knowledge.pdf import PDFKnowledgeBase
 import pytest
 from agno.document import Document
 from agno.document.reader.pdf_reader import PDFReader
-
+from agno.knowledge.pdf import PDFKnowledgeBase
 from canvy.const import PS_DIRNAME
 from canvy.scripts import teacher
 from canvy.scripts.teacher import (
@@ -13,6 +12,7 @@ from canvy.scripts.teacher import (
     retrieve_knowledge,
     validate_typst,
 )
+
 from tests.conftest import OPENAI_TEST_KEY, vanilla_config
 
 

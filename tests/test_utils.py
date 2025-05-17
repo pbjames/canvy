@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 from canvasapi.file import File
 from canvasapi.requester import ResourceDoesNotExist
-
 from canvy.const import LOGGING_CONFIG
 from canvy.types import CanvyConfig, ModelProvider
 from canvy.utils import (
@@ -20,6 +19,7 @@ from canvy.utils import (
     set_config,
     setup_logging,
 )
+
 from tests.conftest import (
     CANVAS_TEST_KEY,
     CANVAS_TEST_URL,

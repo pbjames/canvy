@@ -139,12 +139,14 @@ def provider(config: CanvyConfig):
 
 def setup_cache_mirror(config: CanvyConfig):
     base = config.storage_path / SUMMARIES_DIRNAME
-    for path in base.rglob("**/*"):
+    logger.info(f"Setting up cache mirror at {base}")
+    for path in config.storage_path.rglob("*"):
+        rebased = base / (path.relative_to(config.storage_path))
         if path.is_file():
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.touch()
+            rebased.parent.mkdir(parents=True, exist_ok=True)
+            rebased.touch()
         elif path.is_dir():
-            path.mkdir(parents=True, exist_ok=True)
+            rebased.mkdir(parents=True, exist_ok=True)
 
 
 def put_summary(config: CanvyConfig, path: Path, summary: str):
