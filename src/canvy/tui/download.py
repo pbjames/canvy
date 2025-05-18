@@ -328,7 +328,8 @@ class DownloadPage(Screen[None]):
             )
             total = []
             for r in response:
-                total.append(str(r))
+                # TODO: Re-rendering causes the FSTree to not populate while the response is being built
+                total.append(r.content)
                 md_widget.update("".join(total))
 
     @on(DownloadControl.Quit)
