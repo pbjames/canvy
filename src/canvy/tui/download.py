@@ -38,6 +38,7 @@ from canvy.utils import (
     get_config,
     get_summary,
     provider,
+    put_summary,
     setup_cache_mirror,
 )
 
@@ -331,6 +332,7 @@ class DownloadPage(Screen[None]):
                 # TODO: Re-rendering causes the FSTree to not populate while the response is being built
                 total.append(r.content)
                 md_widget.update("".join(total))
+            put_summary(self.config, file_path, "".join(total))
 
     @on(DownloadControl.Quit)
     def quit(self):
