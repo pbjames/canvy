@@ -5,8 +5,8 @@ from agno.document import Document
 from agno.document.reader.pdf_reader import PDFReader
 from agno.knowledge.pdf import PDFKnowledgeBase
 from canvy.const import PS_DIRNAME
-from canvy.scripts import teacher
-from canvy.scripts.teacher import (
+from canvy.scripts import tutor
+from canvy.scripts.tutor import (
     canvas_files,
     make_problem_sheet,
     retrieve_knowledge,
@@ -84,7 +84,7 @@ def test_retrieve_knowledge(tmp_path: Path):
     assert queue and isinstance(queue.pop(), Document)
 
 
-def test_teacher(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def test_tutor(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     from agno.agent.agent import Agent
 
     config = vanilla_config(tmp_path)
@@ -97,10 +97,10 @@ def test_teacher(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(Agent, "print_response", print)
     monkeypatch.setattr("builtins.input", lambda _: "exit")
     with pytest.raises(SystemExit):
-        teacher(config, [])
+        tutor(config, [])
 
 
-def test_teacher_load_docs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def test_tutor_load_docs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     from agno.agent.agent import Agent
 
     config = vanilla_config(tmp_path)
@@ -126,4 +126,4 @@ def test_teacher_load_docs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     )
     doc = PDFReader().read(path)
     with pytest.raises(SystemExit):
-        teacher(config, doc)
+        tutor(config, doc)

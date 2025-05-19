@@ -30,7 +30,7 @@ from textual.widgets import (
 )
 
 from canvy.const import DOCSCRAPE_DEFAULT_MSG
-from canvy.scripts import teacher
+from canvy.scripts import tutor
 from canvy.scripts.downloader import module_item_files
 from canvy.types import CanvyConfig
 from canvy.utils import (
@@ -320,7 +320,7 @@ class DownloadPage(Screen[None]):
         if self.llm_provider is None:
             md_widget.update(DOCSCRAPE_DEFAULT_MSG + content)
         else:
-            agent = teacher(self.config, interactive=False)
+            agent = tutor(self.config, interactive=False)
             if response := get_summary(self.config, file_path):
                 md_widget.update(response)
                 return

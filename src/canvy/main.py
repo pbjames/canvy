@@ -84,12 +84,12 @@ def download(*, force: bool = False):
 
 
 @cli.command(short_help="Use an assistant to go through the files")
-def teacher():
-    from canvy.scripts import teacher
+def tutor():
+    from canvy.scripts import tutor
 
     config = requires_config()
     try:
-        teacher(config)
+        tutor(config)
     except (KeyboardInterrupt, EOFError):
         pprint("[bold red]Program exiting[/bold red]...")
         sys.exit(0)

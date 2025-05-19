@@ -120,7 +120,7 @@ def retrieve_knowledge(config: CanvyConfig, queue: list[Document]):
     return retrieve_knowledge
 
 
-def teacher(
+def tutor(
     config: CanvyConfig,
     prior_knowledge: list[Document] | None = None,
     *,
