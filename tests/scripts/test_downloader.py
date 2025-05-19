@@ -92,6 +92,6 @@ def canvas(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Canvas:
 
 
 def test_extract_files_from_page(tmp_path: Path, canvas: Canvas):
-    download(canvas, "https://canvas.test.ac.uk", storage_dir=tmp_path)
+    download(canvas, storage_dir=tmp_path)
     fn_path = tmp_path / "Chill course about testing" / "Cool 1" / "slides.pdf"
     assert fn_path.exists() and fn_path.is_file()
