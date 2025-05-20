@@ -313,6 +313,7 @@ class DownloadPage(Screen[None]):
         else:
             logger.warning(f"Unhandled file type: {file_path}")
 
+    @work(thread=True)
     def populate_document(self, file_path: Path):
         md_widget = self.query_exactly_one(Markdown)
         documents = PDFReader().read(file_path)
