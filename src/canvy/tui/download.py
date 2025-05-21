@@ -116,8 +116,9 @@ class Content(VerticalGroup):
 
     @override
     def compose(self) -> ComposeResult:
-        yield VerticalScroll(Markdown(
-            """\
+        yield VerticalScroll(
+            Markdown(
+                """\
 # Canvy
 
 Content for a selected file will appear here, it doesn't work very well with PDFs at the \
@@ -131,7 +132,8 @@ Markdown syntax and extensions are supported.
 - Plaintext
 - Markdown
 """
-        ))
+            )
+        )
 
 
 class DownloadControl(HorizontalGroup):
@@ -313,7 +315,6 @@ class DownloadPage(Screen[None]):
         else:
             logger.warning(f"Unhandled file type: {file_path}")
 
-    @work(thread=True)
     def populate_document(self, file_path: Path):
         md_widget = self.query_exactly_one(Markdown)
         documents = PDFReader().read(file_path)

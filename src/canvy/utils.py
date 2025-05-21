@@ -7,6 +7,8 @@ from collections.abc import Iterable
 from functools import reduce
 from pathlib import Path
 
+from agno.models.ollama import Ollama
+from agno.models.openai.chat import OpenAIChat
 import toml
 from canvasapi.file import File
 
@@ -108,7 +110,7 @@ def concat_names(base: Path, names: Iterable[str | Path]) -> Path:
     return reduce(lambda p, q: p / q, [base, *map(Path, names)])
 
 
-def provider(config: CanvyConfig):
+def provider(config: CanvyConfig) -> OpenAIChat | Ollama | None:
     """
     Get the preferred model provider from the config, default is OpenAI because
     lazy people. Implemented config check to prevent ambiguous errors
@@ -119,22 +121,13 @@ def provider(config: CanvyConfig):
     Returns:
         Model: Agno model type to use, of which there are many
     """
-    from agno.models.ollama import Ollama
-    from agno.models.openai.chat import OpenAIChat
-
-    e = "Model set to {} but the key isn't in the config"
     if config.default_provider == "OpenAI":
         if key := config.openai_key:
             return OpenAIChat(id=OPENAI_MODEL, api_key=key)
-        else:
-            raise ValueError(e.format("OpenAI"))
     elif config.default_provider == "Ollama":
         if model := config.ollama_model:
             return Ollama(id=model)
-        else:
-            raise ValueError(e.format("Ollama"))
-    else:
-        return None
+    return None
 
 
 def setup_cache_mirror(config: CanvyConfig):
