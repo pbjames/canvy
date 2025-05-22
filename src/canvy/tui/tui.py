@@ -3,7 +3,9 @@ from collections.abc import Callable
 from typing import ClassVar
 
 from canvy.tui.const import CanvyMode
-from canvy.tui.mainpage import MainPage
+from canvy.tui.main import MainPage
+from canvy.tui.settings import SettingsPage
+from canvy.tui.tutor import TutorPage
 from textual import on
 from textual.app import App
 from textual.binding import BindingType
@@ -20,8 +22,8 @@ class Canvy(App[None]):
     MODES: ClassVar[dict[str, str | Callable[..., Screen[None]]]] = {
         CanvyMode.LOGIN: LoginPage,
         CanvyMode.DOWNLOAD: DownloadPage,
-        CanvyMode.TUTOR: DownloadPage,
-        CanvyMode.SETTINGS: DownloadPage,
+        CanvyMode.TUTOR: TutorPage,
+        CanvyMode.SETTINGS: SettingsPage,
         CanvyMode.MAIN: MainPage,
     }
     BINDINGS: ClassVar[list[BindingType]] = []

@@ -43,18 +43,10 @@ class LoginPage(Screen[None]):
     """
 
     class Success(Message):
-        """
-        Tell CanvyApp that we've logged in
-        """
-
         def __init__(self) -> None:
             super().__init__()
 
     class Error(Message):
-        """
-        We (yes us) shat ourselves
-        """
-
         def __init__(self, err_msg: str) -> None:
             self.err_msg: str = err_msg
             super().__init__()

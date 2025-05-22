@@ -34,6 +34,8 @@ class MainPage(Screen[None]):
     }
     """
 
+    config: CanvyConfig
+
     class Switch(Message):
         def __init__(self, target: CanvyMode) -> None:
             self.target: str = target
@@ -42,7 +44,7 @@ class MainPage(Screen[None]):
     def __init__(
         self, name: str | None = None, id: str | None = None, classes: str | None = None
     ) -> None:
-        self.config: CanvyConfig = get_config()
+        self.config = get_config()
         super().__init__(name, id, classes)
 
     @override
