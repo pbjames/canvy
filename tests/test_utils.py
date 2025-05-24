@@ -15,6 +15,7 @@ from canvy.utils import (
     delete_config,
     download_structured,
     get_config,
+    has_config,
     provider,
     set_config,
     setup_logging,
@@ -197,11 +198,17 @@ def test_provider(tmp_path: Path, def_provider: str, key: str):
     }
     args.update({PROVIDER_TEST_MAPPING[def_provider]: key})
     if not key:
-        with pytest.raises(ValueError) as excinfo:
-            provider(CanvyConfig(**args))  # pyright: ignore[reportArgumentType]
-        assert def_provider in str(excinfo.value)
+        assert provider(CanvyConfig(**args)) is None  # pyright: ignore[reportArgumentType]
     else:
         assert isinstance(
             provider(CanvyConfig(**args)),  # pyright: ignore[reportArgumentType]
             PROVIDER_TEST_MODELS[def_provider],
         )
+
+def test_has_config(tmp_path: Path):
+    config = vanilla_config(tmp_path / "config.toml")
+    set_config(config)
+    assert has_config(tmp_path)
+    delete_config(tmp_path)
+    assert not has_config(tmp_path / "config.toml")
+    assert not has_config(tmp_path / "doesntexist")
