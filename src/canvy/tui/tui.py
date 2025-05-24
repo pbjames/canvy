@@ -3,6 +3,7 @@ from collections.abc import Callable
 from typing import ClassVar
 
 from canvy.tui.const import CanvyMode
+from canvy.tui.help import HelpPage
 from canvy.tui.main import MainPage
 from canvy.tui.settings import SettingsPage
 from canvy.tui.tutor import TutorPage
@@ -25,6 +26,7 @@ class Canvy(App[None]):
         CanvyMode.TUTOR: TutorPage,
         CanvyMode.SETTINGS: SettingsPage,
         CanvyMode.MAIN: MainPage,
+        CanvyMode.HELP: HelpPage,
     }
     BINDINGS: ClassVar[list[BindingType]] = []
 

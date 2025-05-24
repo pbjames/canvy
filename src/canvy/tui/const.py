@@ -8,3 +8,4 @@ class CanvyMode(StrEnum):
     DOWNLOAD = "download"
     TUTOR = "tutor"
     MAIN = "main"
+    HELP = "help"

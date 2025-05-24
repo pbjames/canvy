@@ -9,9 +9,9 @@ from textual.screen import Screen
 from textual.widgets import Button, Input
 
 
-class SettingsPage(Screen[None]):
+class HelpPage(Screen[None]):
     DEFAULT_CSS: ClassVar[str] = """
-    Settings {
+    Help {
         layout: vertical;
         align: center middle;
         border-title-align: center;
