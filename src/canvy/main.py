@@ -43,7 +43,8 @@ def requires_config() -> CanvyConfig:
             canvas_url=url,
             canvas_key=getpass(f"Canvas API Key ({api_key_url}): "),
             storage_path=Path(input("Store path (optional): ") or DEFAULT_DOWNLOAD_DIR),
-            openai_key=getpass("Open AI Key (optional): "),
+            openai_key=getpass("OpenAI API Key (optional): "),
+            anthropic_key=getpass("Anthropic API Key (optional): "),
             ollama_model=input("Ollama model (optional): "),
             default_provider=ModelProvider.OPENAI,
         )
@@ -146,8 +147,15 @@ def edit_config():
                 password=True,
             ),
             storage_path=Path(Prompt.ask("Store path: ", default=current.storage_path)),
+            anthropic_key=Prompt.ask(
+                "Anthropic API Key: ",
+                show_default=False,
+                default=current.anthropic_key,
+                password=True,
+            )
+            or "",
             openai_key=Prompt.ask(
-                "Open AI Key: ",
+                "OpenAI API Key: ",
                 show_default=False,
                 default=current.openai_key,
                 password=True,

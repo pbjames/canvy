@@ -9,10 +9,12 @@ from pathlib import Path
 
 from agno.models.ollama import Ollama
 from agno.models.openai.chat import OpenAIChat
+from agno.models.anthropic import Claude
 import toml
 from canvasapi.file import File
 
 from canvy.const import (
+    ANTHRO_MODEL,
     CONFIG_PATH,
     LOG_FN,
     LOGGING_CONFIG,
@@ -110,7 +112,7 @@ def concat_names(base: Path, names: Iterable[str | Path]) -> Path:
     return reduce(lambda p, q: p / q, [base, *map(Path, names)])
 
 
-def provider(config: CanvyConfig) -> OpenAIChat | Ollama | None:
+def provider(config: CanvyConfig) -> OpenAIChat | Ollama | Claude | None:
     """
     Get the preferred model provider from the config, default is OpenAI because
     lazy people. Implemented config check to prevent ambiguous errors
@@ -124,6 +126,9 @@ def provider(config: CanvyConfig) -> OpenAIChat | Ollama | None:
     if config.default_provider == "OpenAI":
         if key := config.openai_key:
             return OpenAIChat(id=OPENAI_MODEL, api_key=key)
+    elif config.default_provider == "Anthropic":
+        if key := config.anthropic_key:
+            return Claude(id=ANTHRO_MODEL, api_key=key)
     elif config.default_provider == "Ollama":
         if model := config.ollama_model:
             return Ollama(id=model)

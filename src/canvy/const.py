@@ -21,6 +21,8 @@ LOGIN_CULPRITS: Final[dict[str, str]] = {
 OPENAI_MODEL: Final[str] = "gpt-4.1-mini"
 OPENAI_EMBEDDINGS: Final[str] = "text-embedding-3-small"
 
+ANTHRO_MODEL: Final[str] = "claude-sonnet-4-20250514"
+
 PROBLEM_SHEET_1: Final[
     str
 ] = """

@@ -6,6 +6,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field, field_serializer, field_validator
 
 from canvy.const import (
+    ANTHRO_KEY_DESC,
     API_KEY_DESC,
     API_KEY_REGEX,
     DEFAULT_DOWNLOAD_DIR,
@@ -24,11 +25,13 @@ class ModelProvider(StrEnum):
     NONE = "None"
     OLLAMA = "Ollama"
     OPENAI = "OpenAI"
+    ANTHRO = "Anthropic"
 
 
 class CanvyConfig(BaseModel):
     canvas_key: str = Field(description=API_KEY_DESC, pattern=API_KEY_REGEX)
     canvas_url: str = Field(description=EDU_URL_DESC, pattern=URL_REGEX)
+    anthropic_key: str = Field(default="", description=ANTHRO_KEY_DESC)
     openai_key: str = Field(default="", description=OPENAI_KEY_DESC)
     ollama_model: str = Field(default="", description=OLLAMA_MODEL_DESC)
     storage_path: Path = Field(
