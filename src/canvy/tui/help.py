@@ -40,7 +40,7 @@ class HelpPage(Screen[None]):
         yield Input("", id="")
         with HorizontalGroup():
             yield Button("Save", id="save_button", variant="primary")
-            yield Button("Quit", id="quit_button", variant="error")
+            yield Button("Back", id="quit_button", variant="error")
 
     @on(Button.Pressed, "#quit_button")
     def quit(self):

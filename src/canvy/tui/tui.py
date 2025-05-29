@@ -30,6 +30,10 @@ class Canvy(App[None]):
     }
     BINDINGS: ClassVar[list[BindingType]] = []
 
+    @on(LoginPage.Success)
+    def switch_from_login_page(self):
+        self.switch_mode(CanvyMode.MAIN)
+
     @on(MainPage.Switch)
     def switch_from_main_page(self, event: MainPage.Switch):
         self.switch_mode(event.target)
@@ -37,10 +41,6 @@ class Canvy(App[None]):
     @on(LoginPage.Error)
     def notify_login_error(self, message: LoginPage.Error):
         self.notify(message.err_msg, severity="error")
-
-    @on(LoginPage.Success)
-    def return_here(self):
-        self.switch_mode(CanvyMode.MAIN)
 
     def on_mount(self):
         self.switch_mode("login" if not has_config() else "main")

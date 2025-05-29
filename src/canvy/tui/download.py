@@ -61,6 +61,8 @@ COOL_GRADIENT: Gradient = Gradient.from_colors(
 
 
 class FSTree(DirectoryTree):
+    timer: Timer | None
+
     DEFAULT_CSS: ClassVar[
         str
     ] = """
@@ -70,8 +72,6 @@ class FSTree(DirectoryTree):
         background: $background;
     }
     """
-
-    timer: Timer | None
 
     def __init__(
         self,
@@ -199,7 +199,7 @@ class DownloadControl(HorizontalGroup):
         with HorizontalGroup(id="group_2"):
             yield Button("Download", id="download_button", variant="success")
             yield Button("Cancel", id="cancel_button", variant="primary")
-            yield Button("Quit", id="quit_button", variant="error")
+            yield Button("Back", id="quit_button", variant="error")
 
     class Start(Message): ...
 
