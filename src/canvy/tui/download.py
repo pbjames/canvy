@@ -9,8 +9,6 @@ from threading import Lock
 from typing import ClassVar, override
 
 from agno.document.reader.pdf_reader import PDFReader
-from agno.models.ollama import Ollama
-from agno.models.openai.chat import OpenAIChat
 from canvasapi.canvas import Canvas
 from canvasapi.file import File
 from textual import on, work
@@ -32,7 +30,7 @@ from textual.widgets import (
 from canvy.const import DOCSCRAPE_DEFAULT_MSG
 from canvy.scripts import tutor
 from canvy.scripts.downloader import module_item_files
-from canvy.types import CanvyConfig
+from canvy.types import CanvyConfig, Model
 from canvy.utils import (
     download_structured,
     get_config,
@@ -283,7 +281,7 @@ class DownloadControl(HorizontalGroup):
 
 
 class DownloadPage(Screen[None]):
-    llm_provider: OpenAIChat | Ollama | None
+    llm_provider: Model
     config: CanvyConfig
 
     def __init__(

@@ -3,6 +3,9 @@ import logging
 from enum import StrEnum
 from pathlib import Path
 
+from agno.models.anthropic import Claude
+from agno.models.ollama import Ollama
+from agno.models.openai.chat import OpenAIChat
 from pydantic import BaseModel, Field, field_serializer, field_validator
 
 from canvy.const import (
@@ -20,6 +23,8 @@ from canvy.const import (
 
 logger = logging.getLogger(__name__)
 
+
+Model = OpenAIChat | Ollama | Claude | None
 
 class ModelProvider(StrEnum):
     NONE = "None"

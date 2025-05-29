@@ -21,7 +21,7 @@ from canvy.const import (
     OPENAI_MODEL,
     SUMMARIES_DIRNAME,
 )
-from canvy.types import CanvyConfig
+from canvy.types import CanvyConfig, Model
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +112,7 @@ def concat_names(base: Path, names: Iterable[str | Path]) -> Path:
     return reduce(lambda p, q: p / q, [base, *map(Path, names)])
 
 
-def provider(config: CanvyConfig) -> OpenAIChat | Ollama | Claude | None:
+def provider(config: CanvyConfig) -> Model:
     """
     Get the preferred model provider from the config, default is OpenAI because
     lazy people. Implemented config check to prevent ambiguous errors
