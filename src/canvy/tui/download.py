@@ -11,6 +11,7 @@ from typing import ClassVar, override
 from agno.document.reader.pdf_reader import PDFReader
 from canvasapi.canvas import Canvas
 from canvasapi.file import File
+from canvy.tui.const import CanvyMode
 from textual import on, work
 from textual.app import ComposeResult
 from textual.color import Gradient
@@ -204,8 +205,6 @@ class DownloadControl(HorizontalGroup):
 
     class Stop(Message): ...
 
-    class Quit(Message): ...
-
     @on(Button.Pressed, "#download_button")
     def start_download(self) -> None:
         self.post_message(self.Start())
@@ -221,7 +220,7 @@ class DownloadControl(HorizontalGroup):
 
     @on(Button.Pressed, "#quit_button")
     def quit(self) -> None:
-        self.post_message(self.Quit())
+        self.app.switch_mode(CanvyMode.MAIN)
 
     @work(thread=True)
     def download(self, *, force: bool = False):
@@ -333,10 +332,6 @@ class DownloadPage(Screen[None]):
                 total.append(r.content)
                 md_widget.update("".join(total))
             put_summary(self.config, file_path, "".join(total))
-
-    @on(DownloadControl.Quit)
-    def quit(self):
-        self.app.exit()
 
     def on_mount(self):
         self.border_title: str = "Login"
