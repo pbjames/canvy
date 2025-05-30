@@ -1,3 +1,5 @@
+from collections.abc import Callable
+from pathlib import Path
 from typing import ClassVar, Final, override
 
 from canvy.const import API_KEY_REGEX, URL_REGEX
@@ -8,12 +10,16 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.screen import Screen
-from textual.widgets import Button, Input, Static
+from textual.widgets import Button, Input, OptionList, Static
 import logging
 import re
 
+from textual.widgets.option_list import Option
+
 
 logger = logging.getLogger(__name__)
+
+ConfigMutator = Callable[[CanvyConfig], CanvyConfig]
 
 
 class Provider(Static):
@@ -114,7 +120,9 @@ class Canvas(Static):
     config: Final[CanvyConfig]
     border_title: str
 
-    DEFAULT_CSS: ClassVar[str] = """
+    DEFAULT_CSS: ClassVar[
+        str
+    ] = """
     Canvas {
         layout: vertical;
         width: 100%;
@@ -153,7 +161,12 @@ class Canvas(Static):
     def compose(self) -> ComposeResult:
         yield Static("Canvas")
         yield Input(self.config.canvas_url, "Canvas URL: ", id="url_input")
-        yield Input(self.config.canvas_key, "Canvas API Key: ", id="canvas_key_input", password=True)
+        yield Input(
+            self.config.canvas_key,
+            "Canvas API Key: ",
+            id="canvas_key_input",
+            password=True,
+        )
 
     def on_mount(self):
         self.refresh_validation_state()
@@ -170,7 +183,10 @@ class Canvas(Static):
         url_input = self.query_exactly_one("#url_input", expect_type=Input)
         url_input = CanvyConfig.add_https(url_input.value)
         key_input = self.query_exactly_one("#canvas_key_input", expect_type=Input).value
-        return re.match(CanvyConfig.add_https(URL_REGEX), url_input) is not None and re.match(API_KEY_REGEX, key_input) is not None
+        return (
+            re.match(CanvyConfig.add_https(URL_REGEX), url_input) is not None
+            and re.match(API_KEY_REGEX, key_input) is not None
+        )
 
     @on(Input.Changed)
     def on_input_changed(self) -> None:
@@ -180,6 +196,121 @@ class Canvas(Static):
         self.remove_class("valid")
         self.remove_class("invalid")
         self.add_class("valid" if self.valid else "invalid")
+
+
+class StoragePath(Static):
+    config: CanvyConfig
+    border_title: str
+
+    DEFAULT_CSS: ClassVar[
+        str
+    ] = """
+    StoragePath {
+        layout: vertical;
+        width: 100%;
+        height: auto;
+        border: hkey $primary;
+        margin: 1;
+    }
+
+    StoragePath.valid {
+        background: rgba(0, 255, 0, 0.16);
+        border: hkey green;
+    }
+
+    StoragePath.invalid {
+        background: rgba(128, 128, 128, 0.08);
+        border: hkey gray;
+    }
+
+    StoragePath > Static {
+        width: 100%;
+        content-align: center middle;
+        text-style: bold;
+        margin-bottom: 1;
+    }
+
+    StoragePath Input {
+        margin: 1;
+    }
+    """
+
+    @override
+    def compose(self) -> ComposeResult:
+        yield Static("Storage Path")
+        with VerticalGroup() as container:
+            yield Input(str(self.config.storage_path), "Path: ", id="path_input")
+
+    def on_mount(self):
+        self.refresh_validation_state()
+
+    def __init__(self, config: CanvyConfig):
+        self.config = config
+        super().__init__()
+
+    @property
+    def valid(self):
+        path_input = self.query_exactly_one(Input)
+        try:
+            return CanvyConfig.verify_accessible_path(Path(path_input.value))
+        except Exception as e:
+            logger.debug(f"Invalid storage provided{e}")
+            return False
+
+    def config_mutator(self, config: CanvyConfig):
+        path_input = self.query_exactly_one(Input)
+        config.storage_path = Path(path_input.value)
+        return config
+
+    @on(Input.Changed)
+    def on_input_changed(self) -> None:
+        self.refresh_validation_state()
+
+    def refresh_validation_state(self) -> None:
+        self.remove_class("valid")
+        self.remove_class("invalid")
+        self.add_class("valid" if self.valid else "invalid")
+
+
+class DefaultProvider(Static):
+    config: CanvyConfig
+    selected: ModelProvider
+    border_title: str
+
+    DEFAULT_CSS: ClassVar[
+        str
+    ] = """
+    DefaultProvider {
+        layout: vertical;
+        width: 100%;
+        height: auto;
+        border: hkey $primary;
+        margin: 1;
+    }
+    """
+
+    @override
+    def compose(self) -> ComposeResult:
+        yield Static()
+        with VerticalGroup():
+            yield OptionList(*list(Option(p, id=p) for p in ModelProvider))
+
+    def on_mount(self):
+        self.border_title = "Default Provider"
+
+    def __init__(self, config: CanvyConfig):
+        self.config = config
+        self.selected = config.default_provider
+        super().__init__()
+
+    def config_mutator(self, config: CanvyConfig):
+        config.default_provider = self.selected
+        return config
+
+    @on(OptionList.OptionSelected)
+    def update_selected(self, event: OptionList.OptionSelected):
+        self.selected = ModelProvider(event.option.id)
+
 
 
 class SettingsPage(Screen[None]):
@@ -230,6 +361,8 @@ class SettingsPage(Screen[None]):
             for provider in ModelProvider:
                 if provider != ModelProvider.NONE:
                     yield Provider(self.config, provider)
+            yield StoragePath(self.config)
+            yield DefaultProvider(self.config)
             with HorizontalGroup(id="button_group"):
                 yield Button("Save", id="save_button", variant="primary")
                 yield Button("Back", id="quit_button", variant="error")
@@ -238,9 +371,15 @@ class SettingsPage(Screen[None]):
     def save_settings(self) -> None:
         providers = self.query(Provider)
         canvas = self.query_exactly_one(Canvas)
-        for provider in providers:
-            self.config = provider.config_mutator(self.config)
-        self.config = canvas.config_mutator(self.config)
+        storage = self.query_exactly_one(StoragePath)
+        default_prov = self.query_exactly_one(DefaultProvider)
+        mutations: list[ConfigMutator] = []
+        mutations.extend(provider.config_mutator for provider in providers)
+        mutations.append(canvas.config_mutator)
+        mutations.append(storage.config_mutator)
+        mutations.append(default_prov.config_mutator)
+        for mu in mutations:
+            self.config = mu(self.config)
         try:
             # TODO: This isn't validating
             new_config = self.config.model_validate(self.config, strict=True)
