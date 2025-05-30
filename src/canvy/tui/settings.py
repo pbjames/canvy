@@ -339,7 +339,7 @@ class SettingsPage(Screen[None]):
     }
 
     Button {
-        margin: 1;
+        margin: 0 2;
     }
 
     #button_group {
@@ -381,12 +381,12 @@ class SettingsPage(Screen[None]):
         for mu in mutations:
             self.config = mu(self.config)
         try:
-            new_config = self.config.model_validate(self.config.model_dump(), strict=True)
+            new_config = self.config.model_validate(self.config.model_dump())
             set_config(new_config)
             self.notify("Saved successfully.", severity="information")
         except Exception as e:
             self.notify("Error saving settings!", severity="error")
-            logger.error(f"Error saving settings: {e}")
+            logger.info(f"Error saving settings: {e}")
         self.quit()
 
     @on(Button.Pressed, "#quit_button")
