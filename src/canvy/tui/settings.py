@@ -381,8 +381,7 @@ class SettingsPage(Screen[None]):
         for mu in mutations:
             self.config = mu(self.config)
         try:
-            # TODO: This isn't validating
-            new_config = self.config.model_validate(self.config, strict=True)
+            new_config = self.config.model_validate(self.config.model_dump(), strict=True)
             set_config(new_config)
             self.notify("Saved successfully.", severity="information")
         except Exception as e:
