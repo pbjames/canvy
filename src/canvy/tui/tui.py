@@ -7,7 +7,6 @@ from canvy.tui.help import HelpPage
 from canvy.tui.main import MainPage
 from canvy.tui.settings import SettingsPage
 from canvy.tui.tutor import TutorPage
-from textual import on
 from textual.app import App
 from textual.binding import BindingType
 from textual.screen import Screen
@@ -29,18 +28,6 @@ class Canvy(App[None]):
         CanvyMode.HELP: HelpPage,
     }
     BINDINGS: ClassVar[list[BindingType]] = []
-
-    @on(LoginPage.Success)
-    def switch_from_login_page(self):
-        self.switch_mode(CanvyMode.MAIN)
-
-    @on(MainPage.Switch)
-    def switch_from_main_page(self, event: MainPage.Switch):
-        self.switch_mode(event.target)
-
-    @on(LoginPage.Error)
-    def notify_login_error(self, message: LoginPage.Error):
-        self.notify(message.err_msg, severity="error")
 
     def on_mount(self):
         self.switch_mode("login" if not has_config() else "main")

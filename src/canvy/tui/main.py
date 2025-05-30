@@ -65,7 +65,7 @@ class MainPage(Screen[None]):
             "tutor_button": CanvyMode.TUTOR,
             "settings_button": CanvyMode.SETTINGS
         }.get(event.button.id or "")
-        self.post_message(self.Switch(selected or CanvyMode.MAIN))
+        self.app.switch_mode(selected or CanvyMode.MAIN)
 
     @on(Button.Pressed, "#quit_button")
     def quit(self):

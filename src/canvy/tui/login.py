@@ -1,10 +1,11 @@
 import logging
 from typing import ClassVar, override
 
+from canvy.tui.const import CanvyMode
 from pydantic import ValidationError
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import Center
-from textual.message import Message
 from textual.screen import Screen
 from textual.widgets import Button, Input
 
@@ -42,31 +43,6 @@ class LoginPage(Screen[None]):
     }
     """
 
-    class Success(Message):
-        def __init__(self) -> None:
-            super().__init__()
-
-    class Error(Message):
-        def __init__(self, err_msg: str) -> None:
-            self.err_msg: str = err_msg
-            super().__init__()
-
-    def on_button_pressed(self, _: Button.Pressed):
-        url_input: str = self.query_one("#url_input", expect_type=Input).value
-        sk_input: str = self.query_one("#sk_input", expect_type=Input).value
-        logger.info(f"Login page info: {url_input}: {sk_input[:5] + "."*20}")
-        try:
-            config = CanvyConfig(canvas_url=url_input, canvas_key=sk_input)
-            set_config(config)
-            self.post_message(self.Success())
-        except ValidationError as e:
-            logger.info(f"Invalid login page submission: {e}")
-            culprits: list[str] = [str(next(iter(d["loc"]))) for d in e.errors()]
-            for culprit in reversed(culprits):
-                self.post_message(
-                    self.Error(f"Invalid [b]{LOGIN_CULPRITS[culprit]}[/b]")
-                )
-
     @override
     def compose(self) -> ComposeResult:
         yield Input(placeholder="Your Canvas URL", id="url_input")
@@ -76,3 +52,18 @@ class LoginPage(Screen[None]):
 
     def on_mount(self):
         self.border_title: str = "Login"
+
+    @on(Button.Pressed)
+    def validate_inputs(self, _: Button.Pressed):
+        url_input: str = self.query_one("#url_input", expect_type=Input).value
+        sk_input: str = self.query_one("#sk_input", expect_type=Input).value
+        logger.info(f"Login page info: {url_input}: {sk_input[:5] + "."*20}")
+        try:
+            config = CanvyConfig(canvas_url=url_input, canvas_key=sk_input)
+            set_config(config)
+            self.app.switch_mode(CanvyMode.MAIN)
+        except ValidationError as e:
+            logger.info(f"Invalid login page submission: {e}")
+            culprits: list[str] = [str(next(iter(d["loc"]))) for d in e.errors()]
+            for culprit in reversed(culprits):
+                self.notify(f"Invalid [b]{LOGIN_CULPRITS[culprit]}[/b]", severity="error")

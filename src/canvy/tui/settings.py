@@ -242,12 +242,14 @@ class SettingsPage(Screen[None]):
             self.config = provider.config_mutator(self.config)
         self.config = canvas.config_mutator(self.config)
         try:
-            new_config = CanvyConfig.model_validate(self.config)
+            # TODO: This isn't validating
+            new_config = self.config.model_validate(self.config, strict=True)
             set_config(new_config)
             self.notify("Saved successfully.", severity="information")
         except Exception as e:
             self.notify("Error saving settings!", severity="error")
             logger.error(f"Error saving settings: {e}")
+        self.quit()
 
     @on(Button.Pressed, "#quit_button")
     def quit(self):
