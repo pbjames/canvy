@@ -6,9 +6,9 @@ from canvasapi.canvas import Canvas, Course
 from canvasapi.file import File
 from canvasapi.module import Module, ModuleItem
 from canvasapi.page import Page
+
 from canvy.scripts.downloader import download
 from canvy.types import ModuleItemType
-
 from tests.conftest import CANVAS_TEST_URL, vanilla_config
 
 
@@ -71,7 +71,7 @@ def canvas(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Canvas:
         url_bodies = {
             "page-empty": "hello",
             "page-files": f"{CANVAS_TEST_URL}/api/v1/courses/1/files/1",
-            "page-none": None
+            "page-none": None,
         }
         page_1 = Page(
             None,

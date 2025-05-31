@@ -1,16 +1,19 @@
 from typing import ClassVar, override
 
-from canvy.types import CanvyConfig
-from canvy.utils import get_config
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Input
 
+from canvy.types import CanvyConfig
+from canvy.utils import get_config
+
 
 class HelpPage(Screen[None]):
-    DEFAULT_CSS: ClassVar[str] = """
+    DEFAULT_CSS: ClassVar[
+        str
+    ] = """
     Help {
         layout: vertical;
         align: center middle;
@@ -31,7 +34,9 @@ class HelpPage(Screen[None]):
 
     config: CanvyConfig
 
-    def __init__(self, name: str | None = None, id: str | None = None, classes: str | None = None) -> None:
+    def __init__(
+        self, name: str | None = None, id: str | None = None, classes: str | None = None
+    ) -> None:
         super().__init__(name, id, classes)
         self.config = get_config()
 

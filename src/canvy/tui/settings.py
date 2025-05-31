@@ -1,21 +1,20 @@
+import logging
+import re
 from collections.abc import Callable
 from pathlib import Path
 from typing import ClassVar, Final, override
 
-from canvy.const import API_KEY_REGEX, URL_REGEX
-from canvy.tui.const import CanvyMode
-from canvy.types import CanvyConfig, ModelProvider
-from canvy.utils import get_config, set_config
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.screen import Screen
 from textual.widgets import Button, Input, OptionList, Static
-import logging
-import re
-
 from textual.widgets.option_list import Option
 
+from canvy.const import API_KEY_REGEX, URL_REGEX
+from canvy.tui.const import CanvyMode
+from canvy.types import CanvyConfig, ModelProvider
+from canvy.utils import get_config, set_config
 
 logger = logging.getLogger(__name__)
 
@@ -310,7 +309,6 @@ class DefaultProvider(Static):
     @on(OptionList.OptionSelected)
     def update_selected(self, event: OptionList.OptionSelected):
         self.selected = ModelProvider(event.option.id)
-
 
 
 class SettingsPage(Screen[None]):

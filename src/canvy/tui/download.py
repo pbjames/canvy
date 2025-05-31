@@ -11,7 +11,6 @@ from typing import ClassVar, override
 from agno.document.reader.pdf_reader import PDFReader
 from canvasapi.canvas import Canvas
 from canvasapi.file import File
-from canvy.tui.const import CanvyMode
 from textual import on, work
 from textual.app import ComposeResult
 from textual.color import Gradient
@@ -31,6 +30,7 @@ from textual.widgets import (
 from canvy.const import DOCSCRAPE_DEFAULT_MSG
 from canvy.scripts import tutor
 from canvy.scripts.downloader import module_item_files
+from canvy.tui.const import CanvyMode
 from canvy.types import CanvyConfig, Model
 from canvy.utils import (
     download_structured,
@@ -213,9 +213,15 @@ class DownloadControl(HorizontalGroup):
     @on(Button.Pressed, "#cancel_button")
     def stop_download(self) -> None:
         self._terminate = True
-        self.query_exactly_one("#pg_courses", expect_type=ProgressBar).update(total=0)
-        self.query_exactly_one("#pg_modules", expect_type=ProgressBar).update(total=0)
-        self.query_exactly_one("#pg_files", expect_type=ProgressBar).update(total=0)
+        self.query_exactly_one("#pg_courses", expect_type=ProgressBar).update(
+            progress=0, total=1
+        )
+        self.query_exactly_one("#pg_modules", expect_type=ProgressBar).update(
+            progress=0, total=1
+        )
+        self.query_exactly_one("#pg_files", expect_type=ProgressBar).update(
+            progress=0, total=1
+        )
         self.post_message(self.Stop())
 
     @on(Button.Pressed, "#quit_button")

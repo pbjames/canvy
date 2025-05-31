@@ -2,17 +2,17 @@ import logging
 from collections.abc import Callable
 from typing import ClassVar
 
-from canvy.tui.const import CanvyMode
-from canvy.tui.help import HelpPage
-from canvy.tui.main import MainPage
-from canvy.tui.settings import SettingsPage
-from canvy.tui.tutor import TutorPage
 from textual.app import App
 from textual.binding import BindingType
 from textual.screen import Screen
 
+from canvy.tui.const import CanvyMode
 from canvy.tui.download import DownloadPage
+from canvy.tui.help import HelpPage
 from canvy.tui.login import LoginPage
+from canvy.tui.main import MainPage
+from canvy.tui.settings import SettingsPage
+from canvy.tui.tutor import TutorPage
 from canvy.utils import has_config
 
 logger = logging.getLogger(__name__)

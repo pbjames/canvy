@@ -1,14 +1,15 @@
 from typing import ClassVar, override
 
-from canvy.tui.const import CanvyMode
-from canvy.types import CanvyConfig
-from canvy.utils import get_config, provider
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import VerticalGroup
 from textual.message import Message
 from textual.screen import Screen
 from textual.widgets import Button
+
+from canvy.tui.const import CanvyMode
+from canvy.types import CanvyConfig
+from canvy.utils import get_config, provider
 
 
 class MainPage(Screen[None]):
@@ -63,7 +64,7 @@ class MainPage(Screen[None]):
         selected = {
             "download_button": CanvyMode.DOWNLOAD,
             "tutor_button": CanvyMode.TUTOR,
-            "settings_button": CanvyMode.SETTINGS
+            "settings_button": CanvyMode.SETTINGS,
         }.get(event.button.id or "")
         self.app.switch_mode(selected or CanvyMode.MAIN)
 

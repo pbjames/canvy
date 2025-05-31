@@ -27,6 +27,7 @@ from canvy.utils import (
 cli = Typer()
 logger = logging.getLogger(__name__)
 
+
 def requires_config() -> CanvyConfig:
     try:
         config = get_config()

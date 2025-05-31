@@ -7,10 +7,10 @@ from collections.abc import Iterable
 from functools import reduce
 from pathlib import Path
 
+import toml
+from agno.models.anthropic import Claude
 from agno.models.ollama import Ollama
 from agno.models.openai.chat import OpenAIChat
-from agno.models.anthropic import Claude
-import toml
 from canvasapi.file import File
 
 from canvy.const import (

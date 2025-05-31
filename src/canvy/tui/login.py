@@ -1,7 +1,6 @@
 import logging
 from typing import ClassVar, override
 
-from canvy.tui.const import CanvyMode
 from pydantic import ValidationError
 from textual import on
 from textual.app import ComposeResult
@@ -10,6 +9,7 @@ from textual.screen import Screen
 from textual.widgets import Button, Input
 
 from canvy.const import LOGIN_CULPRITS
+from canvy.tui.const import CanvyMode
 from canvy.types import CanvyConfig
 from canvy.utils import set_config
 
@@ -66,4 +66,6 @@ class LoginPage(Screen[None]):
             logger.info(f"Invalid login page submission: {e}")
             culprits: list[str] = [str(next(iter(d["loc"]))) for d in e.errors()]
             for culprit in reversed(culprits):
-                self.notify(f"Invalid [b]{LOGIN_CULPRITS[culprit]}[/b]", severity="error")
+                self.notify(
+                    f"Invalid [b]{LOGIN_CULPRITS[culprit]}[/b]", severity="error"
+                )

@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import pytest
-from canvy.types import CanvyConfig, ModelProvider
 
+from canvy.types import CanvyConfig, ModelProvider
 from tests.conftest import vanilla_config
 
 

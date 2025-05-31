@@ -4,6 +4,7 @@ import pytest
 from agno.document import Document
 from agno.document.reader.pdf_reader import PDFReader
 from agno.knowledge.pdf import PDFKnowledgeBase
+
 from canvy.const import PS_DIRNAME
 from canvy.scripts import tutor
 from canvy.scripts.tutor import (
@@ -12,7 +13,6 @@ from canvy.scripts.tutor import (
     retrieve_knowledge,
     validate_typst,
 )
-
 from tests.conftest import OPENAI_TEST_KEY, vanilla_config
 
 

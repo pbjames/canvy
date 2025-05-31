@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from canvasapi.file import File
 from canvasapi.requester import ResourceDoesNotExist
+
 from canvy.const import LOGGING_CONFIG
 from canvy.types import CanvyConfig, ModelProvider
 from canvy.utils import (
@@ -20,7 +21,6 @@ from canvy.utils import (
     set_config,
     setup_logging,
 )
-
 from tests.conftest import (
     CANVAS_TEST_KEY,
     CANVAS_TEST_URL,
@@ -198,12 +198,15 @@ def test_provider(tmp_path: Path, def_provider: str, key: str):
     }
     args.update({PROVIDER_TEST_MAPPING[def_provider]: key})
     if not key:
-        assert provider(CanvyConfig(**args)) is None  # pyright: ignore[reportArgumentType]
+        assert (
+            provider(CanvyConfig(**args)) is None
+        )  # pyright: ignore[reportArgumentType]
     else:
         assert isinstance(
             provider(CanvyConfig(**args)),  # pyright: ignore[reportArgumentType]
             PROVIDER_TEST_MODELS[def_provider],
         )
+
 
 def test_has_config(tmp_path: Path):
     config = vanilla_config(tmp_path / "config.toml")

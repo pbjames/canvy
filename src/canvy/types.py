@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 Model = OpenAIChat | Ollama | Claude | None
 
+
 class ModelProvider(StrEnum):
     NONE = "None"
     OLLAMA = "Ollama"
