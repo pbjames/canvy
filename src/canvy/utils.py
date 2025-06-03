@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import logging.config
 import os
+import platform
 import re
+import subprocess
 from collections.abc import Iterable
 from functools import reduce
 from pathlib import Path
@@ -19,7 +21,6 @@ from canvy.const import (
     LOG_FN,
     LOGGING_CONFIG,
     OPENAI_MODEL,
-    SUMMARIES_DIRNAME,
 )
 from canvy.types import CanvyConfig, Model
 
@@ -135,33 +136,12 @@ def provider(config: CanvyConfig) -> Model:
     return None
 
 
-def setup_cache_mirror(config: CanvyConfig):
-    base = config.storage_path / SUMMARIES_DIRNAME
-    logger.info(f"Setting up cache mirror at {base}")
-    for path in config.storage_path.rglob("*"):
-        rebased = base / (path.relative_to(config.storage_path))
-        logger.info(f"{path=} {rebased=}")
-        if SUMMARIES_DIRNAME in str(path):
-            continue
-        elif path.is_file():
-            rebased.parent.mkdir(parents=True, exist_ok=True)
-            rebased.touch()
-        elif path.is_dir():
-            rebased.mkdir(parents=True, exist_ok=True)
-
-
-def put_summary(config: CanvyConfig, path: Path, summary: str):
-    path = (
-        config.storage_path / SUMMARIES_DIRNAME / path.relative_to(config.storage_path)
-    )
-    path.write_text(summary)
-    logger.info(f"Put summary {summary[:17]}.. into {path}")
-
-
-def get_summary(config: CanvyConfig, path: Path):
-    path = (
-        config.storage_path / SUMMARIES_DIRNAME / path.relative_to(config.storage_path)
-    )
-    content = path.read_text()
-    logger.info(f"Read summary {content}.. from {path}")
-    return content
+def start_process(*args: str):
+    if (os_name := platform.system()) == "Linux":
+        subprocess.run(("xdg-open", *args), check=False)
+    elif os_name == "Windows":
+        subprocess.run(("cmd", "/c", "start", *args), check=False)
+    elif os_name == "Darwin":
+        subprocess.run(("open", *args), check=False)
+    else:
+        logger.warning(f"Unhandled OS: {os_name}")

@@ -71,17 +71,6 @@ LOG_FN: Final[Path] = user_log_path(APP_NAME) / "canvy.log"
 CONFIG_PATH: Final[Path] = user_config_path(APP_NAME) / "config.toml"
 DEFAULT_DOWNLOAD_DIR: Final[Path] = user_documents_path() / APP_NAME
 PS_DIRNAME: Final[str] = "Problem Sheets"
-SUMMARIES_DIRNAME: Final[str] = ".summary"
-
-DOCSCRAPE_DEFAULT_MSG: Final[
-    str
-] = """
-# Document Scrape
-
-`If you'd like a readable summary, select a model provider and provide a key \
-and / or model in settings! (This only applies to document files like PDFs)`
-
-"""
 
 LOGGING_CONFIG = {
     "version": 1,

@@ -8,7 +8,6 @@ from pathlib import Path
 from threading import Lock
 from typing import ClassVar, override
 
-from agno.document.reader.pdf_reader import PDFReader
 from canvasapi.canvas import Canvas
 from canvasapi.file import File
 from textual import on, work
@@ -27,18 +26,15 @@ from textual.widgets import (
     ProgressBar,
 )
 
-from canvy.const import DOCSCRAPE_DEFAULT_MSG
-from canvy.scripts import tutor
 from canvy.scripts.downloader import module_item_files
 from canvy.tui.const import CanvyMode
 from canvy.types import CanvyConfig, Model
 from canvy.utils import (
     download_structured,
     get_config,
-    get_summary,
     provider,
-    put_summary,
     setup_cache_mirror,
+    start_process,
 )
 
 logger = logging.getLogger(__name__)
@@ -96,9 +92,8 @@ class FSTree(DirectoryTree):
 
 class Content(VerticalGroup):
     """
-    Show extracted PDF contents for fun
+    I've no idea what to put here.
     """
-
     DEFAULT_CSS: ClassVar[
         str
     ] = """
@@ -115,25 +110,7 @@ class Content(VerticalGroup):
 
     @override
     def compose(self) -> ComposeResult:
-        yield VerticalScroll(
-            Markdown(
-                """\
-# Canvy
-
-Content for a selected file will appear here, it doesn't work very well with PDFs at the \
-moment - unless you use an LLM.
-
-## Supported File Types
-
-Markdown syntax and extensions are supported.
-
-- PDF documents
-- Plaintext
-- Markdown
-"""
-            )
-        )
-
+        yield VerticalScroll(Markdown())
 
 class DownloadControl(HorizontalGroup):
     """
@@ -312,32 +289,11 @@ class DownloadPage(Screen[None]):
         file_path = msg.path
         md_widget = self.query_exactly_one(Markdown)
         if (ext := file_path.suffix) == ".pdf":
-            self.populate_document(file_path)
+            # start_process(str(file_path))
         elif ext in {".txt", ".md", ""}:
             md_widget.update(file_path.read_text())
         else:
             logger.warning(f"Unhandled file type: {file_path}")
-
-    def populate_document(self, file_path: Path):
-        md_widget = self.query_exactly_one(Markdown)
-        documents = PDFReader().read(file_path)
-        content = "".join(d.content for d in documents)
-        if self.llm_provider is None:
-            md_widget.update(DOCSCRAPE_DEFAULT_MSG + content)
-        else:
-            agent = tutor(self.config, interactive=False)
-            if response := get_summary(self.config, file_path):
-                md_widget.update(response)
-                return
-            response = agent.run(
-                f"Summarise the content from: {file_path}", stream=True
-            )
-            total = []
-            for r in response:
-                # TODO: Re-rendering causes the FSTree to not populate while the response is being built
-                total.append(r.content)
-                md_widget.update("".join(total))
-            put_summary(self.config, file_path, "".join(total))
 
     def on_mount(self):
         self.border_title: str = "Login"
