@@ -10,11 +10,11 @@ from typing import ClassVar, override
 
 from canvasapi.canvas import Canvas
 from canvasapi.file import File
+from canvy.types import CanvyConfig
 from textual import on, work
 from textual.app import ComposeResult
 from textual.color import Gradient
 from textual.containers import HorizontalGroup, VerticalGroup, VerticalScroll
-from textual.message import Message
 from textual.reactive import reactive
 from textual.screen import Screen
 from textual.timer import Timer
@@ -28,13 +28,9 @@ from textual.widgets import (
 
 from canvy.scripts.downloader import module_item_files
 from canvy.tui.const import CanvyMode
-from canvy.types import CanvyConfig, Model
 from canvy.utils import (
     download_structured,
     get_config,
-    provider,
-    setup_cache_mirror,
-    start_process,
 )
 
 logger = logging.getLogger(__name__)
@@ -178,13 +174,8 @@ class DownloadControl(HorizontalGroup):
             yield Button("Cancel", id="cancel_button", variant="primary")
             yield Button("Back", id="quit_button", variant="error")
 
-    class Start(Message): ...
-
-    class Stop(Message): ...
-
     @on(Button.Pressed, "#download_button")
     def start_download(self) -> None:
-        self.post_message(self.Start())
         self.download()
 
     @on(Button.Pressed, "#cancel_button")
@@ -199,7 +190,6 @@ class DownloadControl(HorizontalGroup):
         self.query_exactly_one("#pg_files", expect_type=ProgressBar).update(
             progress=0, total=1
         )
-        self.post_message(self.Stop())
 
     @on(Button.Pressed, "#quit_button")
     def quit(self) -> None:
@@ -263,7 +253,6 @@ class DownloadControl(HorizontalGroup):
 
 
 class DownloadPage(Screen[None]):
-    llm_provider: Model
     config: CanvyConfig
 
     def __init__(
@@ -271,9 +260,6 @@ class DownloadPage(Screen[None]):
     ) -> None:
         super().__init__(name, id, classes)
         self.config = get_config()
-        self.llm_provider = provider(self.config)
-        if self.llm_provider is not None:
-            setup_cache_mirror(self.config)  # maybe expensive?
 
     @override
     def compose(self) -> ComposeResult:
@@ -289,7 +275,7 @@ class DownloadPage(Screen[None]):
         file_path = msg.path
         md_widget = self.query_exactly_one(Markdown)
         if (ext := file_path.suffix) == ".pdf":
-            # start_process(str(file_path))
+            pass
         elif ext in {".txt", ".md", ""}:
             md_widget.update(file_path.read_text())
         else:
