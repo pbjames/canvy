@@ -4,9 +4,11 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import ClassVar, Final, override
 
-from textual import on
+from canvasapi.course import Course
+from textual import on, work
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
+from textual.message import Message
 from textual.screen import Screen
 from textual.widgets import Button, Input, OptionList, Static
 from textual.widgets.option_list import Option
@@ -14,7 +16,7 @@ from textual.widgets.option_list import Option
 from canvy.const import API_KEY_REGEX, URL_REGEX
 from canvy.tui.const import CanvyMode
 from canvy.types import CanvyConfig, ModelProvider
-from canvy.utils import get_config, set_config
+from canvy.utils import better_course_name, get_config, set_config
 
 logger = logging.getLogger(__name__)
 
@@ -237,7 +239,7 @@ class StoragePath(Static):
     @override
     def compose(self) -> ComposeResult:
         yield Static("Storage Path")
-        with VerticalGroup() as container:
+        with VerticalGroup():
             yield Input(str(self.config.storage_path), "Path: ", id="path_input")
 
     def on_mount(self):
@@ -309,6 +311,66 @@ class DefaultProvider(Static):
     @on(OptionList.OptionSelected)
     def update_selected(self, event: OptionList.OptionSelected):
         self.selected = ModelProvider(event.option.id)
+
+
+class SelectedCourses(Static):
+    config: CanvyConfig
+    border_title: str
+    selected: list[int]
+    options: dict[str, int]
+
+    DEFAULT_CSS: ClassVar[
+        str
+    ] = """
+    DefaultProvider {
+        layout: vertical;
+        width: 100%;
+        height: auto;
+        border: hkey $primary;
+        margin: 1;
+    }
+    """
+
+    @override
+    def compose(self) -> ComposeResult:
+        yield Static()
+        with VerticalGroup():
+            yield OptionList()
+
+    class FetchFinished(Message): ...
+
+    def on_mount(self):
+        self.border_title = "Default Provider"
+        self.fetch_options()
+
+    @work
+    def fetch_options(self):
+        from canvasapi.canvas import Canvas as APICanvas
+
+        canvas = APICanvas(self.config.canvas_url, self.config.canvas_key)
+        courses: list[Course] = list(canvas.get_courses(enrolled=True))
+        self.options = {
+            better_course_name(course.name): course.id for course in courses
+        }
+        self.post_message(self.FetchFinished())
+
+    @on(FetchFinished)
+    def fill_options(self):
+        options_list = self.query_exactly_one(OptionList)
+        options_list.add_options(Option(name) for name in self.options.keys())
+
+    def __init__(self, config: CanvyConfig):
+        self.config = config
+        self.selected = []
+        self.options = {}
+        super().__init__()
+
+    def config_mutator(self, config: CanvyConfig):
+        return config
+
+    @on(OptionList.OptionSelected)
+    def update_selected(self, event: OptionList.OptionSelected):
+        self.selected.append(self.options[str(event.option.prompt)])
 
 
 class SettingsPage(Screen[None]):

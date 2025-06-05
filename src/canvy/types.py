@@ -17,6 +17,7 @@ from canvy.const import (
     EDU_URL_DESC,
     OLLAMA_MODEL_DESC,
     OPENAI_KEY_DESC,
+    SELECTED_COURSES_DESC,
     STORAGE_PATH_DESC,
     URL_REGEX,
 )
@@ -46,6 +47,7 @@ class CanvyConfig(BaseModel):
     default_provider: ModelProvider = Field(
         default=ModelProvider.NONE, description=DEFAULT_PROVIDER_DESC
     )
+    selected_courses: list[int] = Field(default=[], description=SELECTED_COURSES_DESC)
 
     @field_validator("canvas_url")
     @staticmethod

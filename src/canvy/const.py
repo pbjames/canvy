@@ -66,6 +66,9 @@ OPENAI_KEY_DESC: Final[str] = "OpenAI API key to access the GPT models"
 ANTHRO_KEY_DESC: Final[str] = "Antrhopic AI API key for the claude models"
 OLLAMA_MODEL_DESC: Final[str] = "Ollama model that is going to be used"
 DEFAULT_PROVIDER_DESC: Final[str] = "Default model provider, e.g. Ollama, OpenAI etc. "
+SELECTED_COURSES_DESC: Final[str] = (
+    "Select courses to download instead of all of them at once."
+)
 
 LOG_FN: Final[Path] = user_log_path(APP_NAME) / "canvy.log"
 CONFIG_PATH: Final[Path] = user_config_path(APP_NAME) / "config.toml"
