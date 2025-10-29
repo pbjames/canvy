@@ -10,19 +10,14 @@ from functools import reduce
 from pathlib import Path
 
 import toml
-from agno.models.anthropic import Claude
-from agno.models.ollama import Ollama
-from agno.models.openai.chat import OpenAIChat
 from canvasapi.file import File
 
 from canvy.const import (
-    ANTHRO_MODEL,
     CONFIG_PATH,
     LOG_FN,
     LOGGING_CONFIG,
-    OPENAI_MODEL,
 )
-from canvy.types import CanvyConfig, Model
+from canvy.types import CanvyConfig
 
 logger = logging.getLogger(__name__)
 
@@ -111,29 +106,6 @@ def download_structured(
 
 def concat_names(base: Path, names: Iterable[str | Path]) -> Path:
     return reduce(lambda p, q: p / q, [base, *map(Path, names)])
-
-
-def provider(config: CanvyConfig) -> Model:
-    """
-    Get the preferred model provider from the config, default is OpenAI because
-    lazy people. Implemented config check to prevent ambiguous errors
-
-    Args:
-        config: Config with provider
-
-    Returns:
-        Model: Agno model type to use, of which there are many
-    """
-    if config.default_provider == "OpenAI":
-        if key := config.openai_key:
-            return OpenAIChat(id=OPENAI_MODEL, api_key=key)
-    elif config.default_provider == "Anthropic":
-        if key := config.anthropic_key:
-            return Claude(id=ANTHRO_MODEL, api_key=key)
-    elif config.default_provider == "Ollama":
-        if model := config.ollama_model:
-            return Ollama(id=model)
-    return None
 
 
 def start_process(*args: str):

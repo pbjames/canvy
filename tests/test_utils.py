@@ -1,7 +1,6 @@
 import getpass
 import logging.config
 import os
-from itertools import chain
 from pathlib import Path
 
 import pytest
@@ -9,7 +8,7 @@ from canvasapi.file import File
 from canvasapi.requester import ResourceDoesNotExist
 
 from canvy.const import LOGGING_CONFIG
-from canvy.types import CanvyConfig, ModelProvider
+from canvy.types import CanvyConfig
 from canvy.utils import (
     better_course_name,
     create_dir,
@@ -17,16 +16,12 @@ from canvy.utils import (
     download_structured,
     get_config,
     has_config,
-    provider,
     set_config,
     setup_logging,
 )
 from tests.conftest import (
     CANVAS_TEST_KEY,
     CANVAS_TEST_URL,
-    PROVIDER_TEST_KEYS,
-    PROVIDER_TEST_MAPPING,
-    PROVIDER_TEST_MODELS,
     vanilla_config,
 )
 
@@ -73,10 +68,7 @@ def test_get_config(tmp_path: Path):
             f"""\
 canvas_key = "{CANVAS_TEST_KEY}"
 canvas_url = "{CANVAS_TEST_URL}"
-openai_key = ""
-ollama_model = ""
 storage_path = "{doc_path}"
-default_provider = "OpenAI"
 """
         )
     equivalent = vanilla_config(doc_path)
@@ -91,16 +83,13 @@ def test_set_config(tmp_path: Path):
     expected_contents = f"""\
 canvas_key = "{CANVAS_TEST_KEY}"
 canvas_url = "{CANVAS_TEST_URL}"
-openai_key = ""
-ollama_model = ""
 storage_path = "{doc_path}"
-default_provider = "Ollama"
+selected_courses = []
 """
     config = CanvyConfig(
         canvas_key=CANVAS_TEST_KEY,
         canvas_url=CANVAS_TEST_URL,
         storage_path=doc_path,
-        default_provider=ModelProvider.OLLAMA,
     )
     set_config(config, new_path)
     with open(new_path) as fp:
@@ -175,43 +164,11 @@ def test_download_structured_shouldve_force(
     assert not download_structured(file, "course", storage_dir=tmp_path, force=False)
 
 
-@pytest.mark.parametrize(
-    "def_provider,key",
-    chain(
-        *[
-            [
-                (provider.value, ""),
-                (provider.value, PROVIDER_TEST_KEYS[provider.value]),
-            ]
-            for provider in [ModelProvider.OPENAI, ModelProvider.OLLAMA]
-        ]
-    ),
-)
-def test_provider(tmp_path: Path, def_provider: str, key: str):
-    setup_logging()
-    logger.info(f"{def_provider}: {key}")
-    args = {
-        "canvas_key": CANVAS_TEST_KEY,
-        "canvas_url": CANVAS_TEST_URL,
-        "storage_path": tmp_path,
-        "default_provider": def_provider,
-    }
-    args.update({PROVIDER_TEST_MAPPING[def_provider]: key})
-    if not key:
-        assert (
-            provider(CanvyConfig(**args)) is None
-        )  # pyright: ignore[reportArgumentType]
-    else:
-        assert isinstance(
-            provider(CanvyConfig(**args)),  # pyright: ignore[reportArgumentType]
-            PROVIDER_TEST_MODELS[def_provider],
-        )
-
-
 def test_has_config(tmp_path: Path):
-    config = vanilla_config(tmp_path / "config.toml")
-    set_config(config)
-    assert has_config(tmp_path)
-    delete_config(tmp_path)
-    assert not has_config(tmp_path / "config.toml")
+    tmp_file_path = tmp_path / "config.toml"
+    config = vanilla_config(tmp_path)
+    set_config(config, tmp_file_path)
+    assert has_config(tmp_file_path)
+    delete_config(tmp_file_path)
+    assert not has_config(tmp_file_path)
     assert not has_config(tmp_path / "doesntexist")

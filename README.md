@@ -13,17 +13,14 @@
   - [Contribution](#contribution)
 <!--toc:end-->
 
-All-in-one manager for _educational resources_ hosted on **Canvas**.
+File downloader for educational resources hosted on **Canvas**.
 
 ## Features
 
 - Download all resources (e.g. files, text, etc.)
 - Manage courses and accounts
-- Synthesize new resources (e.g. problem sheets) using LLMs
 
 ## Usage
-
-[![asciicast](https://asciinema.org/a/pEzUGLWc55PfKzXmb282NqtDS.svg)](https://asciinema.org/a/pEzUGLWc55PfKzXmb282NqtDS?speed=2)
 
 ## Installation
 
@@ -36,5 +33,3 @@ Basically anything else:
 2. ``uv tool install canvy``
 
 ## Contribution
-
-yes

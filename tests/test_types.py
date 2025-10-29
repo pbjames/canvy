@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from canvy.types import CanvyConfig, ModelProvider
+from canvy.types import CanvyConfig
 from tests.conftest import vanilla_config
 
 
@@ -21,13 +21,6 @@ def test_verify_accessible_path(tmp_path: Path):
 def test_serialize_path(tmp_path: Path):
     assert CanvyConfig.serialize_path(vanilla_config(tmp_path), tmp_path) == str(
         tmp_path
-    )
-
-
-def test_serialize_provider(tmp_path: Path):
-    assert (
-        CanvyConfig.serialize_provider(vanilla_config(tmp_path), ModelProvider.OPENAI)
-        == "OpenAI"
     )
 
 

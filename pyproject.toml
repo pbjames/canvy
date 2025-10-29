@@ -11,26 +11,18 @@ license = "MIT"
 requires-python = "==3.12.*"
 authors = [{ name = "James K.", email = "jameskowal10@gmail.com" }]
 dependencies = [
-  "agno>=1.3.1",
-  "anthropic>=0.52.1",
   "canvasapi>=3.3.0",
-  "duckduckgo-search>=8.0.1",
   "hatch>=1.14.1",
-  "mcp>=1.7.1",
-  "ollama>=0.4.8",
-  "openai>=1.75.0",
   "platformdirs>=4.3.7",
   "pydantic>=2.11.3",
   "pypdf>=5.4.0",
   "pytest>=8.3.5",
   "pytest-cov>=6.1.1",
-  "qdrant-client>=1.13.3",
   "rich>=14.0.0",
   "textual>=3.1.1",
   "textual-dev>=1.7.0",
   "toml>=0.10.2",
   "typer>=0.15.2",
-  "typst>=0.13.2",
 ]
 
 [project.scripts]

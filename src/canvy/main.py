@@ -8,14 +8,14 @@ from canvasapi.requester import ResourceDoesNotExist
 from pydantic import ValidationError
 from rich import print as pprint
 from rich.prompt import Confirm, Prompt
-from typer import Context, Typer
+from typer import Typer
 
 from canvy.const import (
     CONFIG_PATH,
     DEFAULT_DOWNLOAD_DIR,
     LOG_FN,
 )
-from canvy.types import CanvyConfig, CLIClearFile, ModelProvider
+from canvy.types import CanvyConfig, CLIClearFile
 from canvy.utils import (
     better_course_name,
     create_dir,
@@ -38,16 +38,14 @@ def requires_config() -> CanvyConfig:
         choice = Confirm.ask("Config file doesn't exist, create one?")
         if not choice:
             sys.exit(1)
-        url = input("Canvas URL: ")
+        url = CanvyConfig.add_https(input("Canvas URL: "))
         api_key_url = f"{url}/profile/settings"
+        api_key = getpass(f"Canvas API Key ({api_key_url}): (hidden)")
+        storage_path = Path(input("Store path (optional): ") or DEFAULT_DOWNLOAD_DIR)
         config = CanvyConfig(
             canvas_url=url,
-            canvas_key=getpass(f"Canvas API Key ({api_key_url}): "),
-            storage_path=Path(input("Store path (optional): ") or DEFAULT_DOWNLOAD_DIR),
-            openai_key=getpass("OpenAI API Key (optional): "),
-            anthropic_key=getpass("Anthropic API Key (optional): "),
-            ollama_model=input("Ollama model (optional): "),
-            default_provider=ModelProvider.OPENAI,
+            canvas_key=api_key,
+            storage_path=storage_path,
         )
         set_config(config)
         return requires_config()  # XXX: Might be dangerous :smirking_cat:
@@ -75,7 +73,7 @@ def download(*, force: bool = False):
 
     canvas, config = requires_canvas()
     try:
-        count = download(canvas, Path(config.canvas_url), force=force)
+        count = download(canvas, config.storage_path, force=force)
         pprint(f"[bold]{count}[/bold] new files! :speaking_head: :fire:")
     except (KeyboardInterrupt, EOFError):
         pprint("[bold red]Download stopping[/bold red]...")
@@ -83,18 +81,6 @@ def download(*, force: bool = False):
     except ResourceDoesNotExist as e:
         pprint(f"We likely don't have access to courses no more :sad_cat:: {e}")
         sys.exit(1)
-
-
-@cli.command(short_help="Use an assistant to go through the files")
-def tutor():
-    from canvy.scripts import tutor
-
-    config = requires_config()
-    try:
-        tutor(config)
-    except (KeyboardInterrupt, EOFError):
-        pprint("[bold red]Program exiting[/bold red]...")
-        sys.exit(0)
 
 
 @cli.command(short_help="List available courses")
@@ -148,24 +134,6 @@ def edit_config():
                 password=True,
             ),
             storage_path=Path(Prompt.ask("Store path: ", default=current.storage_path)),
-            anthropic_key=Prompt.ask(
-                "Anthropic API Key: ",
-                show_default=False,
-                default=current.anthropic_key,
-                password=True,
-            )
-            or "",
-            openai_key=Prompt.ask(
-                "OpenAI API Key: ",
-                show_default=False,
-                default=current.openai_key,
-                password=True,
-            )
-            or "",
-            ollama_model=Prompt.ask("Ollama model: ", default=current.ollama_model),
-            default_provider=ModelProvider(
-                Prompt.ask("Default provider: ", choices=list(ModelProvider))
-            ),
         )
         set_config(new)
     except Exception as e:
@@ -191,9 +159,6 @@ def set_config(  # noqa: PLR0913
     canvas_url: str | None = None,
     canvas_key: str | None = None,
     storage_path: Path | None = None,
-    openai_key: str | None = None,
-    ollama_model: str | None = None,
-    default_provider: ModelProvider | None = None,
 ):
     from canvy.utils import set_config
 
@@ -204,9 +169,6 @@ def set_config(  # noqa: PLR0913
             canvas_url=url,
             canvas_key=canvas_key or getpass(f"Canvas API Key ({api_key_url}): "),
             storage_path=storage_path or DEFAULT_DOWNLOAD_DIR,
-            openai_key=openai_key or "",
-            ollama_model=ollama_model or "",
-            default_provider=default_provider or ModelProvider.OPENAI,
         )
         set_config(config)
     except ValidationError as e:
@@ -222,14 +184,6 @@ def clear(file_type: CLIClearFile):
             path.unlink()
     elif ft is CLIClearFile.CONFIG:
         delete_config()
-
-
-@cli.callback(invoke_without_command=True)
-def tui(ctx: Context):
-    from canvy.tui import run
-
-    if ctx.invoked_subcommand is None:
-        run()
 
 
 def main():

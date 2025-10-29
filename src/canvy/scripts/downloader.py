@@ -22,10 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_files_from_page(
-    canvas: Canvas,
-    course: Course,
-    module: Module,
-    page: Page,
+    canvas: Canvas, course: Course, module: Module, page: Page, url: str = ""
 ):
     """
     Use a regex generated from the id of the course to scrape canvas file links
@@ -36,7 +33,7 @@ def extract_files_from_page(
         download_structured arguments
     """
     # INFO: There has to be a better way bro
-    regex = rf"{get_config().canvas_url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
+    regex = rf"{url or get_config().canvas_url}/(?:api/v1/)?courses/{course.id}/files/([0-9]+)"
     page_title = getattr(page, "title", "No Title")
     names = [better_course_name(course.name), module.name, page_title]
     if getattr(page, "body", None) is None:
@@ -55,7 +52,7 @@ def extract_files_from_page(
 
 
 def module_item_files(
-    canvas: Canvas, course: Course, module: Module, item: ModuleItem
+    canvas: Canvas, course: Course, module: Module, item: ModuleItem, url: str = ""
 ) -> Generator[tuple[list[str], File], None, None]:
     """
     Process module items into the file queue for downloads
@@ -66,7 +63,7 @@ def module_item_files(
     course_name = better_course_name(course.name)
     if (type := ModuleItemType(item.type)) == ModuleItemType.PAGE:
         page = course.get_page(item.page_url)
-        yield from extract_files_from_page(canvas, course, module, page)
+        yield from extract_files_from_page(canvas, course, module, page, url)
     elif type is ModuleItemType.ATTACHMENT:
         file = canvas.get_file(item.content_id)
         names = [course_name, module.name]
@@ -75,7 +72,11 @@ def module_item_files(
 
 
 def download(
-    canvas: Canvas, storage_dir: Path | None = None, *, force: bool = False
+    canvas: Canvas,
+    storage_dir: Path | None = None,
+    *,
+    force: bool = False,
+    url: str = "",
 ) -> int:
     # TODO: Define behaviour for canvas files that are more recent than ours
     """
@@ -133,7 +134,9 @@ def download(
                     total=len(modules),
                 )
                 for item in (items := list(module.get_module_items())):
-                    for paths, file in module_item_files(canvas, course, module, item):
+                    for paths, file in module_item_files(
+                        canvas, course, module, item, url
+                    ):
                         progress.update(
                             progress_items,
                             description=f"  File: {file.filename}",
