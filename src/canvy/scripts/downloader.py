@@ -77,6 +77,7 @@ def download(
     *,
     force: bool = False,
     url: str = "",
+    courses: list[int] | None = None,
 ) -> int:
     # TODO: Define behaviour for canvas files that are more recent than ours
     """
@@ -124,6 +125,9 @@ def download(
         progress_module = progress.add_task("Module")
         progress_items = progress.add_task("Downloading files...")
         for course in user_courses:
+            if courses is not None and course.id not in courses:
+                logger.info(f"Skipping {course} as specified")
+                continue
             progress.update(
                 progress_course, description=f"Course: {course.course_code}"
             )

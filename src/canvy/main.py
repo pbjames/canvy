@@ -7,6 +7,8 @@ from canvasapi.canvas import Canvas, Course
 from canvasapi.requester import ResourceDoesNotExist
 from pydantic import ValidationError
 from rich import print as pprint
+from rich.console import Console
+from rich.table import Table
 from rich.prompt import Confirm, Prompt
 from typer import Typer
 
@@ -67,13 +69,32 @@ def requires_canvas() -> tuple[Canvas, CanvyConfig]:
     return canvas, config
 
 
+def fancy_print_courses(courses: list[Course]):
+    table = Table(title="Courses")
+    table.add_column("ID")
+    table.add_column("Title", style="bold")
+    table.add_column("Creation date")
+    table.add_column("Start date")
+    for i, course in enumerate(courses):
+        table.add_row(
+            str(i),
+            better_course_name(course.name),  # pyright: ignore[reportAny]
+            course.created_at,  # pyright: ignore[reportAny]
+            getattr(course, "start_at", ""),
+        )
+    console = Console()
+    console.print(table)
+
+
 @cli.command(short_help="Download files from Canvas")
 def download(*, force: bool = False):
     from canvy.scripts import download
 
     canvas, config = requires_canvas()
     try:
-        count = download(canvas, config.storage_path, force=force)
+        count = download(
+            canvas, config.storage_path, force=force, courses=config.selected_courses
+        )
         pprint(f"[bold]{count}[/bold] new files! :speaking_head: :fire:")
     except (KeyboardInterrupt, EOFError):
         pprint("[bold red]Download stopping[/bold red]...")
@@ -84,7 +105,7 @@ def download(*, force: bool = False):
 
 
 @cli.command(short_help="List available courses")
-def courses(*, detailed: bool = False):
+def courses(*, detailed: bool = True):
     canvas, _ = requires_canvas()
     try:
         courses: list[Course] = list(
@@ -93,24 +114,9 @@ def courses(*, detailed: bool = False):
             ),
         )
         if detailed:
-            from rich.console import Console
-            from rich.table import Table
-
-            table = Table(title="Courses")
-            table.add_column("No. Students", style="bold green")
-            table.add_column("Title", style="bold")
-            table.add_column("Creation date")
-            table.add_column("Start date")
-            for course in courses:
-                table.add_row(
-                    getattr(course, "total_students", ""),
-                    better_course_name(course.name),  # pyright: ignore[reportAny]
-                    course.created_at,  # pyright: ignore[reportAny]
-                    getattr(course, "start_at", ""),
-                )
-            console = Console()
-            console.print(table)
+            fancy_print_courses(courses)
         else:
+            # INFO: mainly for machine output
             for course in courses:
                 print(f"{course}")  # noqa: T201
     except ResourceDoesNotExist as e:
@@ -152,6 +158,37 @@ def edit_config():
 #         pprint(f"We probably don't have access to this course: {e}")
 #     except Exception as e:
 #         pprint(f"Unknown error: {e}")
+
+
+@cli.command(short_help="Configure selected courses to be downloaded exclusively")
+def select_courses():
+    from canvy.utils import set_config
+
+    selected_courses: list[int] = []
+    canvas, current_config = requires_canvas()
+    try:
+        courses: list[Course] = list(
+            canvas.get_courses(  # pyright: ignore[reportUnknownMemberType]
+                enrollment_state="active",
+            ),
+        )
+        course_ids: list[int] = [course.id for course in courses]
+        fancy_print_courses(courses)
+        additions = Prompt.ask("[bold]IDs[/bold] to whitelist (e.g. 0,1,3-5): ")
+        for id_to_add in additions.replace(" ", "").split(","):
+            if len(ids := id_to_add.split("-")) > 1:
+                low_id, high_id = ids
+                selected_courses.extend(
+                    course_ids[id] for id in range(int(low_id), int(high_id) + 1)
+                )
+            else:
+                selected_courses.append(course_ids[int(id_to_add)])
+        current_config.selected_courses = selected_courses
+        set_config(current_config)
+    except ValueError:
+        pprint(f"[bold red]Invalid input.[/bold red]")
+    except Exception as e:
+        pprint(f"[bold red]Unknown error occured[/bold red]: {e}")
 
 
 @cli.command(short_help="Set up config to use the rest of the tool")
