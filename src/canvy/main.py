@@ -69,16 +69,20 @@ def requires_canvas() -> tuple[Canvas, CanvyConfig]:
     return canvas, config
 
 
-def fancy_print_courses(courses: list[Course]):
+def fancy_print_courses(
+    courses: list[Course], highlight_courses: list[int] | None = None
+):
+    highlight_courses = highlight_courses or []
     table = Table(title="Courses")
     table.add_column("ID")
     table.add_column("Title", style="bold")
     table.add_column("Creation date")
     table.add_column("Start date")
     for i, course in enumerate(courses):
+        should_highlight = course.id in highlight_courses
         table.add_row(
             str(i),
-            better_course_name(course.name),  # pyright: ignore[reportAny]
+            f"{'[bold green]' if should_highlight else ''}{better_course_name(course.name)}{'[/bold green]' if should_highlight else ''}",  # pyright: ignore[reportAny]
             course.created_at,  # pyright: ignore[reportAny]
             getattr(course, "start_at", ""),
         )
@@ -143,7 +147,7 @@ def edit_config():
         )
         set_config(new)
     except Exception as e:
-        pprint(f"[bold red]Bad config[\bold  red]: {e}")
+        pprint(f"[bold red]Bad config[/bold  red]: {e}")
 
 
 # @cli.command(short_help="Get grades for each course and assignment")
@@ -162,10 +166,13 @@ def edit_config():
 
 @cli.command(short_help="Configure selected courses to be downloaded exclusively")
 def select_courses():
+    def choice_invert(arr: list[int], choice: int):
+        arr.remove(choice) if choice in arr else arr.append(choice)
+
     from canvy.utils import set_config
 
-    selected_courses: list[int] = []
     canvas, current_config = requires_canvas()
+    selected_courses: list[int] = current_config.selected_courses
     try:
         courses: list[Course] = list(
             canvas.get_courses(  # pyright: ignore[reportUnknownMemberType]
@@ -173,16 +180,15 @@ def select_courses():
             ),
         )
         course_ids: list[int] = [course.id for course in courses]
-        fancy_print_courses(courses)
-        additions = Prompt.ask("[bold]IDs[/bold] to whitelist (e.g. 0,1,3-5): ")
+        fancy_print_courses(courses, highlight_courses=selected_courses)
+        additions = Prompt.ask("[bold]IDs[/bold] to toggle (e.g. 0,1,3-5): ")
         for id_to_add in additions.replace(" ", "").split(","):
             if len(ids := id_to_add.split("-")) > 1:
                 low_id, high_id = ids
-                selected_courses.extend(
-                    course_ids[id] for id in range(int(low_id), int(high_id) + 1)
-                )
+                for id in range(int(low_id), int(high_id) + 1):
+                    choice_invert(selected_courses, id)
             else:
-                selected_courses.append(course_ids[int(id_to_add)])
+                choice_invert(selected_courses, course_ids[int(id_to_add)])
         current_config.selected_courses = selected_courses
         set_config(current_config)
     except ValueError:
