@@ -116,6 +116,19 @@ def test_download_structured(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     assert new_path.exists() and new_path.is_file() and res
 
 
+def test_download_structured_weirdpath(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    corrected_path = tmp_path / "Un_certain" / "slides.pdf"
+    corrected_path.parent.mkdir()
+    file = File(None, {"filename": "slides.pdf"})
+
+    def mock_download(fn: Path):
+        fn.touch()
+
+    monkeypatch.setattr(file, "download", mock_download)
+    res = download_structured(file, "Un/certain", storage_dir=tmp_path, force=False)
+    assert corrected_path.exists() and corrected_path.is_file() and res
+
+
 def test_download_structured_no_access(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     new_path = tmp_path / "course" / "slides.pdf"
     new_path.parent.mkdir()

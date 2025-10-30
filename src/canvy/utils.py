@@ -28,6 +28,8 @@ def setup_logging() -> None:
     quite good
     """
     create_dir(LOG_FN.parent)
+    canvas_logger = logging.getLogger("canvasapi")
+    canvas_logger.setLevel(logging.WARNING)
     return logging.config.dictConfig(LOGGING_CONFIG)
 
 
@@ -87,7 +89,9 @@ def download_structured(
     """
     download_dir = Path(storage_dir or get_config().storage_path).expanduser()
     file_name = file.filename  # pyright: ignore[reportAny]
-    file_path: Path = concat_names(download_dir, (*dirs, file_name))
+    combined_dirs = (*dirs, file_name)
+    combined_dirs = (d.replace("/", "_") for d in combined_dirs)
+    file_path: Path = concat_names(download_dir, combined_dirs)
     create_dir(file_path.parent)
     if not file_path.is_file() or force:
         logger.info(f"Downloading {file_name}{'(forced)' * force} into {file_path}")
@@ -106,14 +110,3 @@ def download_structured(
 
 def concat_names(base: Path, names: Iterable[str | Path]) -> Path:
     return reduce(lambda p, q: p / q, [base, *map(Path, names)])
-
-
-def start_process(*args: str):
-    if (os_name := platform.system()) == "Linux":
-        subprocess.run(("xdg-open", *args), check=False)
-    elif os_name == "Windows":
-        subprocess.run(("cmd", "/c", "start", *args), check=False)
-    elif os_name == "Darwin":
-        subprocess.run(("open", *args), check=False)
-    else:
-        logger.warning(f"Unhandled OS: {os_name}")
