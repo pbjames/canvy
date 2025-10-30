@@ -129,12 +129,12 @@ def download(
                 logger.info(f"Skipping {course} as specified")
                 continue
             progress.update(
-                progress_course, description=f"Course: {course.course_code}"
+                progress_course, description=f"Course: {course.course_code:30.30}"
             )
             for module in (modules := list(course.get_modules())):
                 progress.update(
                     progress_module,
-                    description=f"Module: {module.name}",
+                    description=f"Module: {module.name:30.30}",
                     total=len(modules),
                 )
                 for item in (items := list(module.get_module_items())):
@@ -143,7 +143,7 @@ def download(
                     ):
                         progress.update(
                             progress_items,
-                            description=f"  File: {file.filename}",
+                            description=f"  File: {file.filename:30.30}",
                             total=len(items),
                         )
                         executor.submit(safe_download(file, paths))
